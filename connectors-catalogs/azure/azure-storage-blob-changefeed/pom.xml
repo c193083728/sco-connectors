@@ -1,0 +1,113 @@
+<?xml version="1.0"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+    <parent>
+        <groupId>com.github.sco1237896</groupId>
+        <artifactId>connectors-catalog-azure</artifactId>
+        <version>999-SNAPSHOT</version>
+    </parent>
+
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>connector-azure-storage-blob-changefeed</artifactId>
+
+    <name>Azure Blob Storage change feed</name>
+    <description>Azure Blob Storage change feed</description>
+
+    <packaging>jar</packaging>
+
+    <properties>
+        <connector.type>azure-storage-blob-changefeed</connector.type>
+    </properties>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>com.github.sco1237896</groupId>
+                <artifactId>connectors-maven-plugin</artifactId>
+                <configuration>
+                    <exclude>true</exclude>
+                    <connectors>
+                        <connector>
+                            <name>${connector.type}-source-${connector.version}</name>
+                            <title>${project.name} source</title>
+                            <description>Receive data from Azure Blob storage change feed.</description>
+                            <adapter>
+                                <prefix>azure</prefix>
+                                <name>connector-${connector.type}-source</name>
+                                <version>${connector.kamelets.version}</version>
+                            </adapter>
+                            <kafka>
+                                <prefix>kafka</prefix>
+                                <name>connector-kafka-sink</name>
+                                <version>${connector.kamelets.version}</version>
+                            </kafka>
+                            <dataShape>
+                                <consumes>
+                                    <formats>
+                                        <format>application/json</format>
+                                    </formats>
+                                </consumes>
+                                <produces>
+                                    <formats>
+                                        <format>application/json</format>
+                                    </formats>
+                                </produces>
+                            </dataShape>
+                        </connector>
+                    </connectors>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+        <!--This is auto generate, do not change it-->
+        <profile>
+            <id>kamelets-deps</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>com.azure</groupId>
+                    <artifactId>azure-storage-blob-changefeed</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>com.fasterxml.jackson.datatype</groupId>
+                    <artifactId>jackson-datatype-jsr310</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>org.apache.camel.quarkus</groupId>
+                    <artifactId>camel-quarkus-azure-storage-blob</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>org.apache.camel.quarkus</groupId>
+                    <artifactId>camel-quarkus-core</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>org.apache.camel.quarkus</groupId>
+                    <artifactId>camel-quarkus-jackson</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>org.apache.camel.quarkus</groupId>
+                    <artifactId>camel-quarkus-jsonpath</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>org.apache.camel.quarkus</groupId>
+                    <artifactId>camel-quarkus-kafka</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>org.apache.camel.quarkus</groupId>
+                    <artifactId>camel-quarkus-kamelet</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>org.apache.camel.quarkus</groupId>
+                    <artifactId>camel-quarkus-timer</artifactId>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
+
+</project>

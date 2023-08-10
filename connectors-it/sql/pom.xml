@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+    <parent>
+        <groupId>com.github.sco1237896</groupId>
+        <artifactId>connectors-it</artifactId>
+        <version>999-SNAPSHOT</version>
+    </parent>
+
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>connectors-catalog-sql-it</artifactId>
+    <packaging>pom</packaging>
+
+    <properties>
+        <connector.catalog.group>sql</connector.catalog.group>
+    </properties>
+
+    <modules>
+        <module>mariadb-it</module>
+        <module>mysql-it</module>
+        <module>postgresql-it</module>
+        <module>sqlserver-it</module>
+    </modules>
+
+</project>

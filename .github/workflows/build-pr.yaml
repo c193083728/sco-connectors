@@ -1,0 +1,135 @@
+---
+name: Build PR
+"on":
+  pull_request:
+    branches:
+    - main
+  workflow_dispatch: null
+env:
+  LANG: en_US.UTF-8
+  MAVEN_OPTS: -Xmx3000m
+  MAVEN_ARGS: -V -ntp -Dhttp.keepAlive=false -Dmaven.wagon.http.pool=false -Dmaven.wagon.httpconnectionManager.ttlSeconds=120 -e
+concurrency:
+  group: "${{ github.ref }}-${{ github.workflow }}"
+  cancel-in-progress: true
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+    - name: Set up JDK 17
+      uses: actions/setup-java@v3
+      with:
+        java-version: 17
+        distribution: temurin
+    - name: Cache m2 repo
+      uses: actions/cache@v3
+      with:
+        path: "~/.m2/repository"
+        key: "${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}"
+        restore-keys: |
+          ${{ runner.os }}-maven-
+    - name: Build
+      run: |
+        ./mvnw ${MAVEN_ARGS} clean install
+    - name: Tar Maven Repo
+      shell: bash
+      run: |
+        tar -czf ${{ runner.temp }}/maven-repo.tgz -C ~ .m2/repository
+        ls -lh ${{ runner.temp }}/maven-repo.tgz
+        df -h /
+    - name: Persist Maven Repo
+      uses: actions/upload-artifact@v3
+      with:
+        name: "maven-repo-${{ github.run_id }}"
+        path: "${{ runner.temp }}/maven-repo.tgz"
+        retention-days: 1
+  aws:
+    needs:
+    - build
+    uses: ./.github/workflows/build-it.yaml
+    secrets: inherit
+    with:
+      modules: ":sco-connectors-catalog-aws,:sco-connectors-catalog-aws-it"
+      tag: "${{ github.run_id }}-${{ github.run_attempt }}"
+  azure:
+    needs:
+    - build
+    uses: ./.github/workflows/build-it.yaml
+    secrets: inherit
+    with:
+      modules: ":sco-connectors-catalog-azure,:sco-connectors-catalog-azure-it"
+      tag: "${{ github.run_id }}-${{ github.run_attempt }}"
+  gcp:
+    needs:
+    - build
+    uses: ./.github/workflows/build-it.yaml
+    secrets: inherit
+    with:
+      modules: ":sco-connectors-catalog-gcp,:sco-connectors-catalog-gcp-it"
+      tag: "${{ github.run_id }}-${{ github.run_attempt }}"
+  itops:
+    needs:
+    - build
+    uses: ./.github/workflows/build-it.yaml
+    secrets: inherit
+    with:
+      modules: ":sco-connectors-catalog-itops,:sco-connectors-catalog-itops-it"
+      tag: "${{ github.run_id }}-${{ github.run_attempt }}"
+  messaging:
+    needs:
+    - build
+    uses: ./.github/workflows/build-it.yaml
+    secrets: inherit
+    with:
+      modules: ":sco-connectors-catalog-messaging,:sco-connectors-catalog-messaging-it"
+      tag: "${{ github.run_id }}-${{ github.run_attempt }}"
+  misc:
+    needs:
+    - build
+    uses: ./.github/workflows/build-it.yaml
+    secrets: inherit
+    with:
+      modules: ":sco-connectors-catalog-misc,:sco-connectors-catalog-misc-it"
+      tag: "${{ github.run_id }}-${{ github.run_attempt }}"
+  nosql:
+    needs:
+    - build
+    uses: ./.github/workflows/build-it.yaml
+    secrets: inherit
+    with:
+      modules: ":sco-connectors-catalog-nosql,:sco-connectors-catalog-nosql-it"
+      tag: "${{ github.run_id }}-${{ github.run_attempt }}"
+  saas:
+    needs:
+    - build
+    uses: ./.github/workflows/build-it.yaml
+    secrets: inherit
+    with:
+      modules: ":sco-connectors-catalog-saas,:sco-connectors-catalog-saas-it"
+      tag: "${{ github.run_id }}-${{ github.run_attempt }}"
+  social:
+    needs:
+    - build
+    uses: ./.github/workflows/build-it.yaml
+    secrets: inherit
+    with:
+      modules: ":sco-connectors-catalog-social,:sco-connectors-catalog-social-it"
+      tag: "${{ github.run_id }}-${{ github.run_attempt }}"
+  sql:
+    needs:
+    - build
+    uses: ./.github/workflows/build-it.yaml
+    secrets: inherit
+    with:
+      modules: ":sco-connectors-catalog-sql,:sco-connectors-catalog-sql-it"
+      tag: "${{ github.run_id }}-${{ github.run_attempt }}"
+  storage:
+    needs:
+    - build
+    uses: ./.github/workflows/build-it.yaml
+    secrets: inherit
+    with:
+      modules: ":sco-connectors-catalog-storage,:sco-connectors-catalog-storage-it"
+      tag: "${{ github.run_id }}-${{ github.run_attempt }}"

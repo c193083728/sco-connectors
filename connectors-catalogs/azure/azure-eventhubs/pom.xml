@@ -1,0 +1,120 @@
+<?xml version="1.0"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+    <parent>
+        <groupId>com.github.sco1237896</groupId>
+        <artifactId>connectors-catalog-azure</artifactId>
+        <version>999-SNAPSHOT</version>
+    </parent>
+
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>connector-azure-eventhubs</artifactId>
+
+    <name>Azure Event Hubs</name>
+    <description>Azure Event Hubs</description>
+
+    <packaging>jar</packaging>
+
+    <properties>
+        <connector.type>azure-eventhubs</connector.type>
+    </properties>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>com.github.sco1237896</groupId>
+                <artifactId>connectors-maven-plugin</artifactId>
+                <configuration>
+                    <bannedDependencies>
+                        <bannedDependency>com.fasterxml.jackson.core:jackson-core</bannedDependency>
+                        <bannedDependency>com.fasterxml.jackson.core:jackson-annotations</bannedDependency>
+                        <bannedDependency>com.fasterxml.jackson.core:jackson-databind</bannedDependency>
+                        <bannedDependency>com.fasterxml.jackson.dataformat:jackson-dataformat-xml</bannedDependency>
+                    </bannedDependencies>
+
+                    <connectors>
+                        <connector>
+                            <name>${connector.type}-source-${connector.version}</name>
+                            <title>${project.name} source</title>
+                            <description>Receive data from Azure Event Hubs.</description>
+                            <adapter>
+                                <prefix>azure</prefix>
+                                <name>connector-${connector.type}-source</name>
+                                <version>${connector.kamelets.version}</version>
+                            </adapter>
+                            <kafka>
+                                <prefix>kafka</prefix>
+                                <name>connector-kafka-sink</name>
+                                <version>${connector.kamelets.version}</version>
+                            </kafka>
+                            <dataShape>
+                                <produces>
+                                    <formats>
+                                        <format>application/octet-stream</format>
+                                    </formats>
+                                </produces>
+                            </dataShape>
+                        </connector>
+                        <connector>
+                            <name>${connector.type}-sink-${connector.version}</name>
+                            <title>${project.name} sink</title>
+                            <description>Send data to Azure Event Hubs.</description>
+                            <adapter>
+                                <prefix>azure</prefix>
+                                <name>connector-${connector.type}-sink</name>
+                                <version>${connector.kamelets.version}</version>
+                            </adapter>
+                            <kafka>
+                                <prefix>kafka</prefix>
+                                <name>connector-kafka-source</name>
+                                <version>${connector.kamelets.version}</version>
+                            </kafka>
+                            <dataShape>
+                                <consumes>
+                                    <formats>
+                                        <format>application/octet-stream</format>
+                                    </formats>
+                                </consumes>
+                            </dataShape>
+                        </connector>
+                    </connectors>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+        <!--This is auto generate, do not change it-->
+        <profile>
+            <id>kamelets-deps</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>org.apache.camel.quarkus</groupId>
+                    <artifactId>camel-quarkus-azure-eventhubs</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>org.apache.camel.quarkus</groupId>
+                    <artifactId>camel-quarkus-core</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>org.apache.camel.quarkus</groupId>
+                    <artifactId>camel-quarkus-jackson</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>org.apache.camel.quarkus</groupId>
+                    <artifactId>camel-quarkus-kafka</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>org.apache.camel.quarkus</groupId>
+                    <artifactId>camel-quarkus-kamelet</artifactId>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
+
+</project>

@@ -1,0 +1,47 @@
+apiVersion: camel.apache.org/v1alpha1
+kind: Kamelet
+metadata:
+  name: connector-log-action
+  annotations:
+    camel.apache.org/provider: "Red Hat"
+    camel.apache.org/kamelet.group: "Misc"
+    camel.apache.org/kamelet.version: "${connector.kamelets.version}"
+  labels:
+    camel.apache.org/kamelet.type: "action"
+spec:
+  definition:
+    title: "Log"
+    description: |-
+      Log payload.
+    type: object
+    properties:
+      multiLine:
+        title: Multi Line
+        description: Multi-line
+        type: boolean
+        default: false
+      showProperties:
+        title: Show Properties
+        description: Show properties
+        type: boolean
+        default: false
+      showHeaders:
+        title: Show Headers
+        description: Show headers
+        type: boolean
+        default: false
+  dependencies:
+    - "camel:log"
+    - "camel:kamelet"
+  template:
+    from:
+      uri: "kamelet:source"
+      steps:
+        - to:
+            uri: "log:{{routeId}}"
+            parameters:
+              multiline: "{{multiLine:false}}"
+              showProperties: "{{showProperties:false}}"
+              showHeaders: "{{showHeaders:false}}"
+              showBody: "true"
+              showBodyType: "true"

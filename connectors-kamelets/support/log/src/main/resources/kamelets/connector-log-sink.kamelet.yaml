@@ -1,0 +1,43 @@
+apiVersion: camel.apache.org/v1alpha1
+kind: Kamelet
+metadata:
+  name: connector-log-sink
+  annotations:
+    camel.apache.org/provider: "Red Hat"
+    camel.apache.org/kamelet.group: "Misc"
+    camel.apache.org/kamelet.version: "${connector.kamelets.version}"
+  labels:
+    camel.apache.org/kamelet.type: "sink"
+spec:
+  definition:
+    title: "Log"
+    description: |-
+      Log payload.
+    type: object
+    properties:
+      multiLine:
+        title: Multi Line
+        description: Multi-line
+        type: boolean
+        default: false
+        x-descriptors:
+          - urn:camel:group:common
+      showAll:
+        title: Show All
+        description: Show all
+        type: boolean
+        default: false
+        x-descriptors:
+          - urn:camel:group:common
+  dependencies:
+    - "camel:log"
+    - "camel:kamelet"
+  template:
+    from:
+      uri: "kamelet:source"
+      steps:
+        - to:
+            uri: "log:{{routeId}}"
+            parameters:
+              multiline: "{{multiLine}}"
+              showAll: "{{showAll}}"

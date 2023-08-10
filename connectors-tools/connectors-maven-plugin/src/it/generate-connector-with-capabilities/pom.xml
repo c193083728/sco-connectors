@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.github.sco1237896.it</groupId>
+    <artifactId>generate-connector-simple</artifactId>
+    <version>@project.version@</version>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <connector.generate.skip>true</connector.generate.skip>
+        <kamelet.generate.skip>true</kamelet.generate.skip>
+        <connector.pom.enrich.skip>true</connector.pom.enrich.skip>
+
+        <quarkus.container-image.registry>registry.io</quarkus.container-image.registry>
+        <quarkus.container-image.group>${project.groupId}</quarkus.container-image.group>
+        <quarkus.container-image.name>${project.artifactId}</quarkus.container-image.name>
+        <quarkus.container-image.tag>test</quarkus.container-image.tag>
+        <connector.container.tag>latest</connector.container.tag>
+
+        <connector.operator.type>camel-connector-operator</connector.operator.type>
+        <connector.container.registry>quay.io</connector.container.registry>
+        <connector.container.organization>sco</connector.container.organization>
+        <connector.catalog.root>${maven.multiModuleProjectDirectory}/etc/connectors</connector.catalog.root>
+        <connector.catalog.group>all</connector.catalog.group>
+
+        <connector.type>generate-connector-simple</connector.type>
+        <connector.revision>1</connector.revision>
+        <connector.operator.version>[1.0.0,2.0.0)</connector.operator.version>
+        <connector.kamelets.version>0.0.1</connector.kamelets.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.github.sco1237896</groupId>
+            <artifactId>connectors-catalog-it</artifactId>
+            <version>@project.version@</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>com.github.sco1237896</groupId>
+                <artifactId>connectors-maven-plugin</artifactId>
+                <version>@project.version@</version>
+                <executions>
+                    <execution>
+                        <id>generate-catalog</id>
+                        <goals>
+                            <goal>generate-catalog</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <validate>false</validate>
+                    <camelQuarkusVersion>2.7.1</camelQuarkusVersion>
+                    <catalog>
+                        <path>${project.basedir}</path>
+                        <manifestsPath>${project.basedir}</manifestsPath>
+                    </catalog>
+                    <connectors>
+                        <connector>
+                            <name>connector-source</name>
+                            <capabilities>
+                                <capability>processors</capability>
+                                <capability>data_shape</capability>
+                                <capability>error_handler</capability>
+                            </capabilities>
+                            <adapter>
+                                <prefix>test</prefix>
+                                <name>test-source</name>
+                                <version>999</version>
+                            </adapter>
+                            <kafka>
+                                <prefix>kafka</prefix>
+                                <name>test-kafka-sink</name>
+                                <version>999</version>
+                            </kafka>
+                            <channels>
+                                <stable/>
+                            </channels>
+                        </connector>
+                    </connectors>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

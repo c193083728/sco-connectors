@@ -1,0 +1,70 @@
+apiVersion: camel.apache.org/v1alpha1
+kind: Kamelet
+metadata:
+  name: connector-kafka-sink
+  annotations:
+    camel.apache.org/provider: "Red Hat"
+    camel.apache.org/kamelet.version: "${connector.kamelets.version}"
+  labels:
+    camel.apache.org/kamelet.type: "sink"
+spec:
+  definition:
+    title: "Managed Kafka Sink"
+    description: |-
+      Send data to Managed Kafka topics.
+
+      Optionally, you can set the following properties in the header:
+
+      - `key`: as message key
+
+      - `partition-key`: as message partition key
+    required:
+      - topic
+    type: object
+    properties:
+      topic:
+        title: Topic Name
+        description: The name of the Kafka Topic to use.
+        type: string
+  dependencies:
+    - "camel:kafka"
+    - "camel:kamelet"
+  template:
+    beans:
+      - name: "kafka-client-factory"
+        type: "#class:com.github.sco1237896.connector.kamelet.kafka.ClientFactory"
+        properties:
+          registryUrl: '{{registryUrl:}}'
+          bootstrapUrl: "{{bootstrapServers}}"
+          username: '{{user}}'
+          password: '{{password}}'
+          producerCreationRetryMs: '{{producerCreationRetryMs:5000}}'
+      - name: "kafka-header-serializer"
+        type: "#class:com.github.sco1237896.connector.kamelet.kafka.DefaultKafkaHeaderSerializer"
+    from:
+      uri: "kamelet:source"
+      steps:
+      - choice:
+          when:
+          - simple: "${header[key]}"
+            steps:
+            - set-header:
+                name: kafka.KEY
+                simple: "${header[key]}"
+      - choice:
+          when:
+          - simple: "${header[partition-key]}"
+            steps:
+            - set-header:
+                name: kafka.PARTITION_KEY
+                simple: "${header[partition-key]}"
+      - to:
+          uri: "kafka:{{topic}}"
+          parameters:
+            securityProtocol: "{{securityProtocol:SASL_SSL}}"
+            saslMechanism: "{{saslMechanism:PLAIN}}"
+            saslJaasConfig: "org.apache.kafka.common.security.plain.PlainLoginModule required username='{{user}}' password='{{password}}';"
+            keySerializer: "{{keySerializer:org.apache.kafka.common.serialization.ByteArraySerializer}}"
+            valueSerializer: "{{valueSerializer:com.github.sco1237896.connector.kamelet.serdes.bytes.ByteArraySerializer}}"
+            kafkaClientFactory: "#{{kafka-client-factory}}"
+            headerSerializer: "#{{kafka-header-serializer}}"

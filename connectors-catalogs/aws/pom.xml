@@ -1,0 +1,60 @@
+<?xml version="1.0"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd"
+         xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+    <parent>
+        <groupId>com.github.sco1237896</groupId>
+        <artifactId>connectors-catalogs</artifactId>
+        <version>999-SNAPSHOT</version>
+    </parent>
+
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>connectors-catalog-aws</artifactId>
+    <packaging>pom</packaging>
+
+    <name>AWS Connectors</name>
+    <description>AWS Connectors</description>
+
+    <properties>
+        <connector.catalog.group>aws</connector.catalog.group>
+    </properties>
+
+
+    <dependencies>
+        <dependency>
+            <groupId>com.github.sco1237896</groupId>
+            <artifactId>connectors-kamelets-aws</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>com.github.sco1237896</groupId>
+                    <artifactId>connectors-component-routecontroller</artifactId>
+                    <configuration>
+                        <defaults>
+                            <customizers>
+                                <customizer>${project.basedir}/../etc/customizers/mandatory_accesskey_secretkey_properties.groovy</customizer>
+                                <customizer>${project.basedir}/../etc/customizers/remove_aws_use_default_credentials_provider_property.groovy</customizer>
+                            </customizers>
+                        </defaults>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+
+    <modules>
+        <module>aws-cloudwatch</module>
+        <module>aws-dynamodb</module>
+        <module>aws-dynamodb-streams</module>
+        <module>aws-kinesis</module>
+        <module>aws-lambda</module>
+        <module>aws-s3</module>
+        <module>aws-ses</module>
+        <module>aws-sns</module>
+        <module>aws-sqs</module>
+    </modules>
+</project>

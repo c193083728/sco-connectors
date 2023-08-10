@@ -1,0 +1,55 @@
+<?xml version="1.0"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd"
+         xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+    <parent>
+        <groupId>com.github.sco1237896</groupId>
+        <artifactId>connectors-catalogs</artifactId>
+        <version>999-SNAPSHOT</version>
+    </parent>
+
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>connectors-catalog-gcp</artifactId>
+    <packaging>pom</packaging>
+
+    <name>GCP Connectors</name>
+    <description>GCP Connectors</description>
+
+    <properties>
+        <connector.catalog.group>gcp</connector.catalog.group>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.github.sco1237896</groupId>
+            <artifactId>connectors-kamelets-gcp</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>com.github.sco1237896</groupId>
+                    <artifactId>connectors-component-routecontroller</artifactId>
+                    <configuration>
+                        <defaults>
+                            <customizers>
+                                <customizer>${project.basedir}/../etc/customizers/patch_binary_properties.groovy</customizer>
+                                <customizer>${project.basedir}/../etc/customizers/patch_service_account_key.groovy</customizer>
+                            </customizers>
+                        </defaults>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+
+    <modules>
+        <module>google-functions</module>
+        <module>google-pubsub</module>
+        <module>google-storage</module>
+        <module>google-bigquery</module>
+    </modules>
+
+</project>

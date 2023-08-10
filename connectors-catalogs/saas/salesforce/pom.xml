@@ -1,0 +1,156 @@
+<?xml version="1.0"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+    <parent>
+        <groupId>com.github.sco1237896</groupId>
+        <artifactId>connectors-catalog-saas</artifactId>
+        <version>999-SNAPSHOT</version>
+    </parent>
+
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>connector-salesforce</artifactId>
+
+    <name>Salesforce</name>
+    <description>Salesforce</description>
+
+    <packaging>jar</packaging>
+
+    <properties>
+        <connector.type>salesforce</connector.type>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.github.sco1237896</groupId>
+            <artifactId>connectors-kamelets-salesforce</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>com.github.sco1237896</groupId>
+                <artifactId>connectors-maven-plugin</artifactId>
+                <configuration>
+                    <connectors>
+
+                        <!-- Salesforce Streaming Source -->
+                        <connector>
+                            <name>${connector.type}-streaming-source-${connector.version}</name>
+                            <title>${project.name} Streaming source</title>
+                            <description>Receive updates from Salesforce.</description>
+                            <adapter>
+                                <prefix>salesforce</prefix>
+                                <name>connector-${connector.type}-streaming-source</name>
+                                <version>${connector.kamelets.version}</version>
+                            </adapter>
+                            <kafka>
+                                <prefix>kafka</prefix>
+                                <name>connector-kafka-sink</name>
+                                <version>${connector.kamelets.version}</version>
+                            </kafka>
+                            <dataShape>
+                                <produces>
+                                    <formats>
+                                        <format>application/json</format>
+                                    </formats>
+                                </produces>
+                            </dataShape>
+                        </connector>
+
+                        <!-- Salesforce Create -->
+                        <connector>
+                            <name>${connector.type}-create-sink-${connector.version}</name>
+                            <title>${project.name} Create sink</title>
+                            <description>Create an object in Salesforce.</description>
+                            <adapter>
+                                <prefix>salesforce</prefix>
+                                <name>connector-${connector.type}-create-sink</name>
+                                <version>${connector.kamelets.version}</version>
+                            </adapter>
+                            <kafka>
+                                <prefix>kafka</prefix>
+                                <name>connector-kafka-source</name>
+                                <version>${connector.kamelets.version}</version>
+                            </kafka>
+                        </connector>
+
+                        <!-- Salesforce Delete -->
+                        <connector>
+                            <name>${connector.type}-delete-sink-${connector.version}</name>
+                            <title>${project.name} Delete sink</title>
+                            <description>Delete an object in Salesforce.</description>
+                            <adapter>
+                                <prefix>salesforce</prefix>
+                                <name>connector-${connector.type}-delete-sink</name>
+                                <version>${connector.kamelets.version}</version>
+                            </adapter>
+                            <kafka>
+                                <prefix>kafka</prefix>
+                                <name>connector-kafka-source</name>
+                                <version>${connector.kamelets.version}</version>
+                            </kafka>
+                        </connector>
+
+                        <!-- Salesforce Update -->
+                        <connector>
+                            <name>${connector.type}-update-sink-${connector.version}</name>
+                            <title>${project.name} Update sink</title>
+                            <description>Update an object in Salesforce.</description>
+                            <adapter>
+                                <prefix>salesforce</prefix>
+                                <name>connector-${connector.type}-update-sink</name>
+                                <version>${connector.kamelets.version}</version>
+                            </adapter>
+                            <kafka>
+                                <prefix>kafka</prefix>
+                                <name>connector-kafka-source</name>
+                                <version>${connector.kamelets.version}</version>
+                            </kafka>
+                        </connector>
+
+                    </connectors>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+        <!--This is auto generate, do not change it-->
+        <profile>
+            <id>kamelets-deps</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>org.apache.camel.quarkus</groupId>
+                    <artifactId>camel-quarkus-core</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>org.apache.camel.quarkus</groupId>
+                    <artifactId>camel-quarkus-jackson</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>org.apache.camel.quarkus</groupId>
+                    <artifactId>camel-quarkus-jsonpath</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>org.apache.camel.quarkus</groupId>
+                    <artifactId>camel-quarkus-kafka</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>org.apache.camel.quarkus</groupId>
+                    <artifactId>camel-quarkus-kamelet</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>org.apache.camel.quarkus</groupId>
+                    <artifactId>camel-quarkus-salesforce</artifactId>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
+
+</project>

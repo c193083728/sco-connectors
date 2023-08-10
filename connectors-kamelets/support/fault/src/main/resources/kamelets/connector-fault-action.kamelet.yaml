@@ -1,0 +1,37 @@
+apiVersion: camel.apache.org/v1alpha1
+kind: Kamelet
+metadata:
+  name: connector-fault-action
+  annotations:
+    camel.apache.org/provider: "Red Hat"
+    camel.apache.org/kamelet.group: "Misc"
+    camel.apache.org/kamelet.version: "${connector.kamelets.version}"
+  labels:
+    camel.apache.org/kamelet.type: "action"
+spec:
+  definition:
+    type: object
+    title: "Fault Injection"
+    description: |-
+      Fail the exchange.
+    required:
+      - exceptionType
+      - exceptionMessage
+    properties:
+      exceptionType:
+        title: The Exception Type
+        description: The type of the exception.
+        type: string
+      exceptionMessage:
+        title: The Exception Message
+        description: The message for the exception.
+        type: string
+  dependencies:
+    - "camel:kamelet"
+  template:
+    from:
+      uri: "kamelet:source"
+      steps:
+      - throw-exception:
+          exceptionType: "{{exceptionType}}"
+          message: "{{exceptionMessage}}"
