@@ -59,6 +59,7 @@
         <module>storage</module>
         <module>nosql</module>
         <module>gcp</module>
+        <module>itops</module>
     </modules>
 
     <build>
