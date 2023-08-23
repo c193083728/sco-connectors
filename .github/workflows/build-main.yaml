@@ -56,14 +56,6 @@ jobs:
           echo "CONNECTORS_VERSION=${C_VERSION}" >> $GITHUB_ENV
           echo "CONNECTORS_REVISION=${C_REVISION}" >> $GITHUB_ENV
           echo "CONNECTORS_RELEASE=${C_VERSION}-${C_REVISION}" >> $GITHUB_ENV
-
-      - name: Login to Container Registry
-        uses: docker/login-action@v2
-        with:
-          registry: quay.io
-          username: ${{ secrets.QUAY_MCI_USR }}
-          password: ${{ secrets.QUAY_MCI_PWD }}
-
       - name: Build Project
         run: |          
           cd ${{ env.PROJECTS }}/cos-fleet-catalog-camel
@@ -74,7 +66,13 @@ jobs:
             -Dcos.connector.catalog.root=${{ env.PROJECTS }}/cos-manifests/connectors/cos-fleet-catalog-camel \
             -Dcos.connector.container.tag=${CONNECTORS_RELEASE} \
             -Dlog.enabled=true
-
+#
+#      - name: Login to Container Registry
+#        uses: docker/login-action@v2
+#        with:
+#          registry: quay.io
+#          username: ${{ secrets.QUAY_MCI_USR }}
+#          password: ${{ secrets.QUAY_MCI_PWD }}
 #      - name: Push Container Images
 #        run: |
 #          echo "Pushing container images"
