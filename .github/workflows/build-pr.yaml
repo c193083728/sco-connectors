@@ -51,7 +51,7 @@ jobs:
     uses: ./.github/workflows/build-it.yaml
     secrets: inherit
     with:
-      modules: ":sco-connectors-catalog-aws,:sco-connectors-catalog-aws-it"
+      modules: ":connectors-catalog-aws,:connectors-catalog-aws-it"
       tag: "${{ github.run_id }}-${{ github.run_attempt }}"
   azure:
     needs:
@@ -59,7 +59,7 @@ jobs:
     uses: ./.github/workflows/build-it.yaml
     secrets: inherit
     with:
-      modules: ":sco-connectors-catalog-azure,:sco-connectors-catalog-azure-it"
+      modules: ":connectors-catalog-azure,:connectors-catalog-azure-it"
       tag: "${{ github.run_id }}-${{ github.run_attempt }}"
   gcp:
     needs:
@@ -67,7 +67,7 @@ jobs:
     uses: ./.github/workflows/build-it.yaml
     secrets: inherit
     with:
-      modules: ":sco-connectors-catalog-gcp,:sco-connectors-catalog-gcp-it"
+      modules: ":connectors-catalog-gcp,:connectors-catalog-gcp-it"
       tag: "${{ github.run_id }}-${{ github.run_attempt }}"
   itops:
     needs:
@@ -75,7 +75,7 @@ jobs:
     uses: ./.github/workflows/build-it.yaml
     secrets: inherit
     with:
-      modules: ":sco-connectors-catalog-itops,:sco-connectors-catalog-itops-it"
+      modules: ":connectors-catalog-itops,:connectors-catalog-itops-it"
       tag: "${{ github.run_id }}-${{ github.run_attempt }}"
   messaging:
     needs:
@@ -83,7 +83,7 @@ jobs:
     uses: ./.github/workflows/build-it.yaml
     secrets: inherit
     with:
-      modules: ":sco-connectors-catalog-messaging,:sco-connectors-catalog-messaging-it"
+      modules: ":connectors-catalog-messaging,:connectors-catalog-messaging-it"
       tag: "${{ github.run_id }}-${{ github.run_attempt }}"
   misc:
     needs:
@@ -91,7 +91,7 @@ jobs:
     uses: ./.github/workflows/build-it.yaml
     secrets: inherit
     with:
-      modules: ":sco-connectors-catalog-misc,:sco-connectors-catalog-misc-it"
+      modules: ":connectors-catalog-misc,:connectors-catalog-misc-it"
       tag: "${{ github.run_id }}-${{ github.run_attempt }}"
   nosql:
     needs:
@@ -99,7 +99,7 @@ jobs:
     uses: ./.github/workflows/build-it.yaml
     secrets: inherit
     with:
-      modules: ":sco-connectors-catalog-nosql,:sco-connectors-catalog-nosql-it"
+      modules: ":connectors-catalog-nosql,:connectors-catalog-nosql-it"
       tag: "${{ github.run_id }}-${{ github.run_attempt }}"
   saas:
     needs:
@@ -107,7 +107,7 @@ jobs:
     uses: ./.github/workflows/build-it.yaml
     secrets: inherit
     with:
-      modules: ":sco-connectors-catalog-saas,:sco-connectors-catalog-saas-it"
+      modules: ":connectors-catalog-saas,:connectors-catalog-saas-it"
       tag: "${{ github.run_id }}-${{ github.run_attempt }}"
   social:
     needs:
@@ -115,7 +115,7 @@ jobs:
     uses: ./.github/workflows/build-it.yaml
     secrets: inherit
     with:
-      modules: ":sco-connectors-catalog-social,:sco-connectors-catalog-social-it"
+      modules: ":connectors-catalog-social,:connectors-catalog-social-it"
       tag: "${{ github.run_id }}-${{ github.run_attempt }}"
   sql:
     needs:
@@ -123,7 +123,7 @@ jobs:
     uses: ./.github/workflows/build-it.yaml
     secrets: inherit
     with:
-      modules: ":sco-connectors-catalog-sql,:sco-connectors-catalog-sql-it"
+      modules: ":connectors-catalog-sql,:connectors-catalog-sql-it"
       tag: "${{ github.run_id }}-${{ github.run_attempt }}"
   storage:
     needs:
@@ -131,5 +131,5 @@ jobs:
     uses: ./.github/workflows/build-it.yaml
     secrets: inherit
     with:
-      modules: ":sco-connectors-catalog-storage,:sco-connectors-catalog-storage-it"
+      modules: ":connectors-catalog-storage,:connectors-catalog-storage-it"
       tag: "${{ github.run_id }}-${{ github.run_attempt }}"
