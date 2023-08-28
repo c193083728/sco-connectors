@@ -20,17 +20,17 @@ jobs:
   build-it:
     runs-on: ubuntu-latest
     steps:
-      - name: "Checkout cos-fleet-catalog-camel project"
+      - name: "Checkout sco-connectors project"
         uses: actions/checkout@v3
         with:
-          path: cos-fleet-catalog-camel
+          path: sco-connectors
 
-#      - name: "Checkout cos-manifests project"
-#        uses: actions/checkout@v3
-#        with:
-#          repository: bf2fc6cc711aee1a0c2a/cos-manifests
-#          token: ${{ secrets.PR_TOKEN }}
-#          path: cos-manifests
+      - name: "Checkout sco-manifests project"
+        uses: actions/checkout@v3
+        with:
+          repository: sco1237896/sco-manifests
+          token: ${{ secrets.GH_TOKEN }}
+          path: sco-manifests
 
       - name: Set up JDK 17
         uses: actions/setup-java@v3
@@ -48,45 +48,45 @@ jobs:
           df -h /
           tar -xzf ../maven-repo.tgz -C ~
           df -h /
-      - name: "Validate"
+      - name: "Install"
         run: |
-          cd ${{ env.PROJECTS }}/cos-fleet-catalog-camel
+          cd ${{ env.PROJECTS }}/sco-connectors
           
           ./mvnw ${MAVEN_ARGS} clean install \
-            -Dcos.connector.container.tag=${{ inputs.tag }} \
+            -connector.container.tag=${{ inputs.tag }} \
             -Pcontainer-build \
-            -Dcos.connector.catalog.root=${{ env.PROJECTS }}/cos-manifests/connectors/cos-fleet-catalog-camel \
+            -connector.catalog.root=${{ env.PROJECTS }}/sco-manifests/connectors \
             -pl ${{ inputs.modules }} \
             --amd
-      - name: "Run"
-        env:
-          SF_CLIENT_ID: ${{ secrets.SF_CLIENT_ID }}
-          SF_CLIENT_SECRET: ${{ secrets.SF_CLIENT_SECRET }}
-          SF_CLIENT_USERNAME: ${{ secrets.SF_CLIENT_USERNAME }}
-          SF_CLIENT_PASSWORD: ${{ secrets.SF_CLIENT_PASSWORD }}
-
-          AZURE_EVENTHUB_NAME: ${{ secrets.AZURE_EVENTHUB_NAME }}
-          AZURE_NAMESPACE_NAME: ${{ secrets.AZURE_NAMESPACE_NAME }}
-          AZURE_SHARED_ACCESS_KEY: ${{ secrets.AZURE_SHARED_ACCESS_KEY }}
-          AZURE_SHARED_ACCESS_NAME: ${{ secrets.AZURE_SHARED_ACCESS_NAME }}
-          AZURE_BLOB_ACCESS_KEY: ${{ secrets.AZURE_BLOB_ACCESS_KEY }}
-          AZURE_BLOB_ACCOUNT_NAME: ${{ secrets.AZURE_BLOB_ACCOUNT_NAME }}
-          AZURE_BLOB_CONTAINER_NAME: ${{ secrets.AZURE_BLOB_CONTAINER_NAME }}
-
-          GCP_FUNCTIONS_FUNCTION_NAME: ${{ secrets.GCP_FUNCTIONS_FUNCTION_NAME }}
-          GCP_FUNCTIONS_PROJECT_ID: ${{ secrets.GCP_FUNCTIONS_PROJECT_ID }}
-          GCP_FUNCTIONS_REGION: ${{ secrets.GCP_FUNCTIONS_REGION }}
-          GCP_FUNCTIONS_SERVICE_ACCOUNT_KEY: ${{ secrets.GCP_FUNCTIONS_SERVICE_ACCOUNT_KEY }}
-          GCP_FUNCTIONS_WEBHOOK_ID: ${{ secrets.GCP_FUNCTIONS_WEBHOOK_ID }}
-
-          SLACK_TEST_CHANNEL: ${{ secrets.SLACK_TEST_CHANNEL }}
-          SLACK_TEST_TOKEN: ${{ secrets.SLACK_TEST_TOKEN }}
-          SLACK_TEST_WEBHOOK: ${{ secrets.SLACK_TEST_WEBHOOK }}
+      - name: "Test"
+#        env:
+#          SF_CLIENT_ID: ${{ secrets.SF_CLIENT_ID }}
+#          SF_CLIENT_SECRET: ${{ secrets.SF_CLIENT_SECRET }}
+#          SF_CLIENT_USERNAME: ${{ secrets.SF_CLIENT_USERNAME }}
+#          SF_CLIENT_PASSWORD: ${{ secrets.SF_CLIENT_PASSWORD }}
+#
+#          AZURE_EVENTHUB_NAME: ${{ secrets.AZURE_EVENTHUB_NAME }}
+#          AZURE_NAMESPACE_NAME: ${{ secrets.AZURE_NAMESPACE_NAME }}
+#          AZURE_SHARED_ACCESS_KEY: ${{ secrets.AZURE_SHARED_ACCESS_KEY }}
+#          AZURE_SHARED_ACCESS_NAME: ${{ secrets.AZURE_SHARED_ACCESS_NAME }}
+#          AZURE_BLOB_ACCESS_KEY: ${{ secrets.AZURE_BLOB_ACCESS_KEY }}
+#          AZURE_BLOB_ACCOUNT_NAME: ${{ secrets.AZURE_BLOB_ACCOUNT_NAME }}
+#          AZURE_BLOB_CONTAINER_NAME: ${{ secrets.AZURE_BLOB_CONTAINER_NAME }}
+#
+#          GCP_FUNCTIONS_FUNCTION_NAME: ${{ secrets.GCP_FUNCTIONS_FUNCTION_NAME }}
+#          GCP_FUNCTIONS_PROJECT_ID: ${{ secrets.GCP_FUNCTIONS_PROJECT_ID }}
+#          GCP_FUNCTIONS_REGION: ${{ secrets.GCP_FUNCTIONS_REGION }}
+#          GCP_FUNCTIONS_SERVICE_ACCOUNT_KEY: ${{ secrets.GCP_FUNCTIONS_SERVICE_ACCOUNT_KEY }}
+#          GCP_FUNCTIONS_WEBHOOK_ID: ${{ secrets.GCP_FUNCTIONS_WEBHOOK_ID }}
+#
+#          SLACK_TEST_CHANNEL: ${{ secrets.SLACK_TEST_CHANNEL }}
+#          SLACK_TEST_TOKEN: ${{ secrets.SLACK_TEST_TOKEN }}
+#          SLACK_TEST_WEBHOOK: ${{ secrets.SLACK_TEST_WEBHOOK }}
         run: |
-          cd ${{ env.PROJECTS }}/cos-fleet-catalog-camel
+          cd ${{ env.PROJECTS }}/sco-connectors
           
           ./mvnw ${MAVEN_ARGS} clean install \
-            -Dcos.connector.container.tag=${{ inputs.tag }} \
+            -connector.container.tag=${{ inputs.tag }} \
             -Dlog.enabled=true \
             -Pcontainer-test \
             -pl ${{ inputs.modules }}
