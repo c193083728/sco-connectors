@@ -14,7 +14,7 @@
     <packaging>jar</packaging>
 
     <properties>
-        <container.image.redpanda>docker.io/vectorized/redpanda:v22.3.11</container.image.redpanda>
+        <container.image.redpanda>docker.io/redpandadata/redpanda:v23.2.8</container.image.redpanda>
         <container.image.wiremock>docker.io/wiremock/wiremock:2.35.0</container.image.wiremock>
         <container.image.activemq-artemis>quay.io/artemiscloud/activemq-artemis-broker:1.0.14</container.image.activemq-artemis>
         <container.image.cassandra>cassandra:3.11</container.image.cassandra>
