@@ -109,7 +109,7 @@ jobs:
           git config user.name "sco-connectors"
 
           git checkout -b ${BRANCH_NAME}
-          git add connectors/sco-connector
+          git add connectors
           git status
 
           if [ -z "$(git status --untracked-files=no --porcelain connectors)" ]; then
