@@ -20,7 +20,7 @@
         <container.image.cassandra>cassandra:3.11</container.image.cassandra>
         <container.image.mongodb>mongo:5</container.image.mongodb>
         <container.image.mariadb>mariadb:10.6</container.image.mariadb>
-        <container.image.mysql>mysql:5</container.image.mysql>
+        <container.image.mysql>mysql:8</container.image.mysql>
         <container.image.postgres>postgres:14.6</container.image.postgres>
         <container.image.mssql>mcr.microsoft.com/mssql/server:2017-CU12</container.image.mssql>
         <container.image.minio>quay.io/minio/minio:latest</container.image.minio>
