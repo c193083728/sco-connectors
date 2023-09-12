@@ -16,6 +16,7 @@ import java.util.Properties;
 import java.util.TreeMap;
 import java.util.function.Consumer;
 
+import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.text.CaseUtils;
@@ -190,10 +191,9 @@ public class ConnectorContainer extends GenericContainer<ConnectorContainer> {
         private final Path definition;
         private final Map<String, Object> properties;
         private final Map<String, String> userProperties;
+        private final Map<String, Map<String, Object>> kameletProperties;
 
         private Network network;
-        private String dlqKafkaTopic;
-        private boolean simulateError;
 
         private Builder(String definition) {
             String root = System.getProperty("connectors.catalog.definition.root");
@@ -207,8 +207,27 @@ public class ConnectorContainer extends GenericContainer<ConnectorContainer> {
                 this.definition = Path.of(definition);
             }
 
-            this.properties = new HashMap<>();
-            this.userProperties = new HashMap<>();
+            this.properties = new TreeMap<>();
+            this.userProperties = new TreeMap<>();
+            this.kameletProperties = new TreeMap<>();
+        }
+
+        public Builder withSourceProperties(Map<String, Object> properties) {
+            Objects.requireNonNull(properties);
+
+            this.kameletProperties.computeIfAbsent("source", k -> new TreeMap<>());
+            this.kameletProperties.get("source").putAll(properties);
+
+            return this;
+        }
+
+        public Builder withSinkProperties(Map<String, Object> properties) {
+            Objects.requireNonNull(properties);
+
+            this.kameletProperties.computeIfAbsent("sink", k -> new TreeMap<>());
+            this.kameletProperties.get("sink").putAll(properties);
+
+            return this;
         }
 
         public Builder withProperty(String key, String val) {
@@ -255,203 +274,55 @@ public class ConnectorContainer extends GenericContainer<ConnectorContainer> {
             return this;
         }
 
-        public Builder withDlqErrorHandler(String dlqKafkaTopic, boolean simulateError) {
-            this.dlqKafkaTopic = dlqKafkaTopic;
-            this.simulateError = simulateError;
-            return this;
-        }
-
         public ConnectorContainer build() {
             try (InputStream is = Files.newInputStream(definition)) {
                 ObjectMapper yaml = new ObjectMapper(new YAMLFactory().disable(YAMLGenerator.Feature.WRITE_DOC_START_MARKER));
 
-                ObjectMapper mapper = new ObjectMapper();
-                JsonNode def = mapper.readValue(is, JsonNode.class);
-                JsonNode meta = def.requiredAt("/channels/stable/shard_metadata");
+                ObjectMapper mapper = new YAMLMapper();
+                ObjectNode def = mapper.readValue(is, ObjectNode.class);
 
-                String image = meta.requiredAt("/connector_image").asText();
+                String image = def.requiredAt("/definition/metadata/annotations").get("trait.camel.apache.org/container.image")
+                        .asText();
                 DockerImageName imageName = DockerImageName.parse(image);
 
                 ConnectorContainer answer = new ConnectorContainer(imageName);
 
-                if (!properties.isEmpty()) {
-                    String type = meta.requiredAt("/connector_type").asText();
-                    String adapterKamelet = meta.requiredAt("/kamelets/adapter/name").asText();
-                    String adapterPrefix = meta.requiredAt("/kamelets/adapter/prefix").asText();
-                    String kafkaKamelet = meta.requiredAt("/kamelets/kafka/name").asText();
-                    String kafkaPrefix = meta.requiredAt("/kamelets/kafka/prefix").asText();
-                    String consumes = meta.requiredAt("/consumes").asText();
-                    String produces = meta.requiredAt("/produces").asText();
+                if (!kameletProperties.isEmpty()) {
+                    String sourceKamelet = def.requiredAt("/definition/spec/source/ref/name").asText();
+                    String sinkKamelet = def.requiredAt("/definition/spec/sink/ref/name").asText();
+
+                    if (sourceKamelet.equals("connector-kafka-source")) {
+                        sourceKamelet = "connector-kafka-not-secured-source";
+                    }
+                    if (sinkKamelet.equals("connector-kafka-sink")) {
+                        sinkKamelet = "connector-kafka-not-secured-sink";
+                    }
 
                     ArrayNode integration = yaml.createArrayNode();
                     ObjectNode route = integration.addObject().with("route");
+
                     ObjectNode from = route.with("from");
+                    from.put("uri", "kamelet:" + sourceKamelet);
+
+                    if (kameletProperties.containsKey("source")) {
+                        for (var entry : kameletProperties.get("source").entrySet()) {
+                            from.with("parameters").put(entry.getKey(), entry.getValue().toString());
+                        }
+                    }
+
                     ArrayNode steps = from.withArray("steps");
-                    steps.addObject().with("to").put("uri", "log:before?showAll=true&multiline=true");
-
-                    if (dlqKafkaTopic != null) {
-                        integration.addObject().with("errorHandler").put("ref", "defaultErrorHandler");
-                        answer.withUserProperties(
-                                Map.of(
-                                        "camel.beans.defaultErrorHandler",
-                                        "#class:org.apache.camel.builder.DeadLetterChannelBuilder",
-                                        "camel.beans.defaultErrorHandler.deadLetterUri",
-                                        "kamelet:connector-kafka-not-secured-sink/errorHandler",
-                                        "camel.kamelet.connector-kafka-not-secured-sink.errorHandler.bootstrapServers",
-                                        properties.get("kafka_bootstrap_servers").toString(),
-                                        "camel.kamelet.connector-kafka-not-secured-sink.errorHandler.topic",
-                                        dlqKafkaTopic,
-                                        "camel.beans.defaultErrorHandler.useOriginalMessage",
-                                        "true"));
-                    }
-
-                    if (consumes != null) {
-                        switch (consumes) {
-                            case "application/json": {
-                                ObjectNode step = steps.addObject();
-                                step.with("to").put("uri", "kamelet:connector-decoder-json-action");
-                                if (meta.has("consumes_class")) {
-                                    step.with("to").with("parameters").set("contentClass", meta.get("consumes_class"));
-                                }
-                            }
-                                break;
-                            case "avro/binary": {
-                                ObjectNode step = steps.addObject();
-                                step.with("to").put("uri", "kamelet:connector-decoder-avro-action");
-                                if (meta.has("consumes_class")) {
-                                    step.with("to").with("parameters").set("contentClass", meta.get("consumes_class"));
-                                }
-                            }
-                                break;
-                            case "application/x-java-object": {
-                                ObjectNode step = steps.addObject();
-                                step.with("to").put("uri", "kamelet:connector-decoder-pojo-action");
-                                if (meta.has("consumes_class")) {
-                                    step.with("to").with("parameters").set("mimeType", meta.get("consumes_class"));
-                                }
-                            }
-                                break;
-                            case "text/plain":
-                            case "application/octet-stream":
-                                break;
-                            default:
-                                throw new IllegalArgumentException("Unsupported value format " + consumes);
-                        }
-                    }
-
-                    configureProcessors(mapper, meta, steps, properties);
-
-                    if (produces != null) {
-                        switch (produces) {
-                            case "application/json": {
-                                ObjectNode step = steps.addObject();
-                                step.with("to").put("uri", "kamelet:connector-encoder-json-action");
-                                if (meta.has("consumes_class")) {
-                                    step.with("to").with("parameters").set("contentClass", meta.get("consumes_class"));
-                                }
-                            }
-                                break;
-                            case "avro/binary": {
-                                ObjectNode step = steps.addObject();
-                                step.with("to").put("uri", "kamelet:connector-decoder-json-action");
-                                if (meta.has("consumes_class")) {
-                                    step.with("to").with("parameters").set("contentClass", meta.get("consumes_class"));
-                                }
-                            }
-                                break;
-                            case "text/plain": {
-                                ObjectNode step = steps.addObject();
-                                step.with("to").put("uri", "kamelet:connector-encoder-string-action");
-                            }
-                                break;
-                            case "application/octet-stream": {
-                                ObjectNode step = steps.addObject();
-                                step.with("to").put("uri", "kamelet:connector-encoder-bytearray-action");
-                            }
-                                break;
-                            default:
-                                throw new IllegalArgumentException("Unsupported value format " + produces);
-                        }
-                    }
-
+                    steps.addObject().with("to").put("uri", "log:steps-begin?showAll=true&multiline=true");
                     steps.addObject().with("removeHeader").put("name", "X-Content-Schema");
                     steps.addObject().with("removeProperty").put("name", "X-Content-Schema");
-                    steps.addObject().with("to").put("uri", "log:debug?showAll=true&multiline=true");
+                    steps.addObject().with("to").put("uri", "log:steps-end?showAll=true&multiline=true");
 
-                    if (simulateError) {
-                        steps.addObject().with("bean").put("beanType",
-                                "com.github.sco1237896.connector.core.processor.SimulateErrorProcessor");
-                    }
+                    ObjectNode to = steps.addObject().with("to");
+                    to.put("uri", "kamelet:" + sinkKamelet);
 
-                    ObjectNode to = yaml.createObjectNode();
-
-                    switch (type) {
-                        case "source":
-                            from.put("uri", "kamelet:" + adapterKamelet);
-                            to.put("uri", "kamelet:connector-kafka-not-secured-sink");
-
-                            for (var entry : properties.entrySet()) {
-                                if (entry.getKey().equals("processors")) {
-                                    continue;
-                                }
-                                if (entry.getKey().equals("data_shape")) {
-                                    continue;
-                                }
-                                if (entry.getKey().equals("error_handler")) {
-                                    continue;
-                                }
-
-                                if (entry.getKey().startsWith(adapterPrefix + "_")) {
-                                    String key = entry.getKey().substring(adapterPrefix.length());
-                                    key = CaseUtils.toCamelCase(key, false, '_');
-
-                                    from.with("parameters").put(key, entry.getValue().toString());
-                                }
-                                if (entry.getKey().startsWith(kafkaPrefix + "_")) {
-                                    String key = entry.getKey().substring(kafkaPrefix.length());
-                                    key = CaseUtils.toCamelCase(key, false, '_');
-
-                                    to.with("parameters").put(key, entry.getValue().toString());
-                                }
-                            }
-
-                            steps.addObject().set("to", to);
-
-                            break;
-                        case "sink":
-                            from.put("uri", "kamelet:connector-kafka-not-secured-source");
-                            to.put("uri", "kamelet:" + adapterKamelet);
-
-                            for (var entry : properties.entrySet()) {
-                                if (entry.getKey().equals("processors")) {
-                                    continue;
-                                }
-                                if (entry.getKey().equals("data_shape")) {
-                                    continue;
-                                }
-                                if (entry.getKey().equals("error_handler")) {
-                                    continue;
-                                }
-
-                                if (entry.getKey().startsWith(kafkaPrefix + "_")) {
-                                    String key = entry.getKey().substring(kafkaPrefix.length());
-                                    key = CaseUtils.toCamelCase(key, false, '_');
-
-                                    from.with("parameters").put(key, entry.getValue().toString());
-                                }
-                                if (entry.getKey().startsWith(adapterPrefix + "_")) {
-                                    String key = entry.getKey().substring(adapterPrefix.length());
-                                    key = CaseUtils.toCamelCase(key, false, '_');
-
-                                    to.with("parameters").put(key, entry.getValue().toString());
-                                }
-                            }
-
-                            steps.addObject().set("to", to);
-
-                            break;
-                        default:
-                            throw new IllegalArgumentException("Unsupported type: " + type);
+                    if (kameletProperties.containsKey("sink")) {
+                        for (var entry : kameletProperties.get("sink").entrySet()) {
+                            to.with("parameters").put(entry.getKey(), entry.getValue().toString());
+                        }
                     }
 
                     // add this log to trace what happens after the message gets delivered
@@ -471,12 +342,15 @@ public class ConnectorContainer extends GenericContainer<ConnectorContainer> {
                     answer.withUserProperties(userProperties);
 
                     try (InputStream ip = ConnectorContainer.class.getResourceAsStream("/integration-application.properties")) {
-                        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                        ip.transferTo(baos);
-                        byte[] bytes = baos.toByteArray();
+                        if (ip == null) {
+                            throw new IllegalStateException("Unable to read integration-application.properties");
+                        }
+
+                        byte[] bytes = ip.readAllBytes();
 
                         LOGGER.info("\n\n----------------\napplication properties: \n{}\n----------------\n\n",
                                 new String(bytes));
+
                         answer.withFile(DEFAULT_APPLICATION_PROPERTIES_LOCATION, new ByteArrayInputStream(bytes));
                     }
                 }
@@ -491,17 +365,5 @@ public class ConnectorContainer extends GenericContainer<ConnectorContainer> {
                 throw new RuntimeException(e);
             }
         }
-
-        private boolean configureProcessors(ObjectMapper mapper, JsonNode meta, ArrayNode steps,
-                Map<String, Object> properties) {
-            if (!properties.containsKey("processors")) {
-                return false;
-            }
-
-            ArrayNode procs = mapper.convertValue(properties.get("processors"), ArrayNode.class);
-            steps.addAll(procs);
-            return true;
-        }
-
     }
 }

@@ -33,14 +33,6 @@
                 <plugin>
                     <groupId>com.github.sco1237896</groupId>
                     <artifactId>connectors-component-routecontroller</artifactId>
-                    <configuration>
-                        <defaults>
-                            <customizers>
-                                <customizer>${project.basedir}/../etc/customizers/mandatory_accesskey_secretkey_properties.groovy</customizer>
-                                <customizer>${project.basedir}/../etc/customizers/remove_aws_use_default_credentials_provider_property.groovy</customizer>
-                            </customizers>
-                        </defaults>
-                    </configuration>
                 </plugin>
             </plugins>
         </pluginManagement>

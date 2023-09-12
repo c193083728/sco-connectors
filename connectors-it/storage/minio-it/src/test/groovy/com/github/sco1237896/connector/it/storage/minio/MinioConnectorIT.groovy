@@ -13,7 +13,7 @@ class MinioConnectorIT extends KafkaConnectorSpec {
 
     @Override
     def setupSpec() {
-        minio = new MinioContainer(KafkaConnectorSpec.network)
+        minio = new MinioContainer(network)
         minio.start()
     }
 
@@ -29,22 +29,26 @@ class MinioConnectorIT extends KafkaConnectorSpec {
             def topic = topic()
             def getArgs = GetObjectArgs.builder().bucket(topic).object(objectName).build()
 
-            def cnt = connectorContainer('minio_sink_v1.json', [
-                    'kafka_topic' : topic,
-                    'kafka_bootstrap_servers': KafkaConnectorSpec.kafka.outsideBootstrapServers,
-                    'kafka_consumer_group': UUID.randomUUID().toString(),
-                    'minio_access_key': minio.accessKey,
-                    'minio_secret_key': minio.secretKey,
-                    'minio_endpoint': "http://" + MinioContainer.CONTAINER_ALIAS + ":" + MinioContainer.PORT,
-                    'minio_bucket_name': topic,
-                    'minio_auto_create_bucket': 'true'
-            ])
+            def cnt = forDefinition('minio_sink_v1.yaml')
+                .withSourceProperties([
+                    'topic': topic,
+                    'bootstrapServers': kafka.outsideBootstrapServers,
+                    'consumerGroup': UUID.randomUUID().toString(),
+                ])
+                .withSinkProperties([
+                    'accessKey': minio.accessKey,
+                    'secretKey':  minio.secretKey,
+                    'endpoint': "http://${MinioContainer.CONTAINER_ALIAS}:${MinioContainer.PORT}",
+                    'bucketName': topic,
+                    'autoCreateBucket': 'true',
+                ])
+                .build()
 
             cnt.start()
 
             def mc = minio.client()
         when:
-        KafkaConnectorSpec.kafka.send(topic, payload, ['file': objectName])
+            kafka.send(topic, payload, ['file': objectName])
         then:
             await(10, TimeUnit.SECONDS) {
                 try {
@@ -67,17 +71,22 @@ class MinioConnectorIT extends KafkaConnectorSpec {
             def topic = topic()
             def getArgs = GetObjectArgs.builder().bucket(topic).object(objectName).build()
 
-            def cnt = connectorContainer('minio_source_v1.json', [
-                    'kafka_topic' : topic,
-                    'kafka_bootstrap_servers': KafkaConnectorSpec.kafka.outsideBootstrapServers,
-                    'kafka_consumer_group': UUID.randomUUID().toString(),
-                    'minio_access_key': minio.accessKey,
-                    'minio_secret_key': minio.secretKey,
-                    'minio_endpoint': "http://" + MinioContainer.CONTAINER_ALIAS + ":" + MinioContainer.PORT,
-                    'minio_bucket_name': topic,
-                    'minio_auto_create_bucket': 'true',
-                    'minio_delete_after_read': 'true'
-            ])
+
+            def cnt = forDefinition('minio_source_v1.yaml')
+                .withSinkProperties([
+                        'topic': topic,
+                        'bootstrapServers': kafka.outsideBootstrapServers,
+                        'consumerGroup': UUID.randomUUID().toString(),
+                ])
+                .withSourceProperties([
+                        'accessKey': minio.accessKey,
+                        'secretKey':  minio.secretKey,
+                        'endpoint': "http://${MinioContainer.CONTAINER_ALIAS}:${MinioContainer.PORT}",
+                        'bucketName': topic,
+                        'autoCreateBucket': 'true',
+                        'deleteAfterRead': 'true',
+                ])
+                .build()
 
             cnt.start()
         when:
@@ -92,7 +101,7 @@ class MinioConnectorIT extends KafkaConnectorSpec {
             }
         then:
             await(10, TimeUnit.SECONDS) {
-                def record = KafkaConnectorSpec.kafka.poll(cnt.containerId, topic).find {
+                def record = kafka.poll(cnt.containerId, topic).find {
                     it.value() == payload
                 }
 

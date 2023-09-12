@@ -1,35 +1,30 @@
 package com.github.sco1237896.tools.maven.connector;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.security.MessageDigest;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
-import java.util.ServiceLoader;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
-
-import com.github.sco1237896.tools.maven.connector.model.ConnectorDefinition;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.sco1237896.tools.maven.connector.support.Annotation;
 import com.github.sco1237896.tools.maven.connector.support.AppBootstrapProvider;
-import com.github.sco1237896.tools.maven.connector.support.CatalogConstants;
 import com.github.sco1237896.tools.maven.connector.support.CatalogSupport;
-import com.github.sco1237896.tools.maven.connector.support.Connector;
+import com.github.sco1237896.tools.maven.connector.support.ConnectorDefinition;
 import com.github.sco1237896.tools.maven.connector.support.ConnectorIndex;
 import com.github.sco1237896.tools.maven.connector.support.ConnectorManifest;
 import com.github.sco1237896.tools.maven.connector.support.KameletsCatalog;
 import com.github.sco1237896.tools.maven.connector.support.MojoSupport;
+import groovy.lang.Binding;
+import groovy.lang.GroovyShell;
+import io.fabric8.kubernetes.api.model.HasMetadata;
+import io.fabric8.kubernetes.api.model.ObjectMeta;
+import io.quarkus.bootstrap.BootstrapException;
+import io.quarkus.bootstrap.app.CuratedApplication;
+import io.quarkus.maven.dependency.ResolvedDependency;
+import net.javacrumbs.jsonunit.assertj.JsonAssertions;
+import net.javacrumbs.jsonunit.core.Option;
+import org.apache.camel.v1.Kamelet;
+import org.apache.camel.v1.Pipe;
+import org.apache.camel.v1.PipeSpec;
+import org.apache.camel.v1.pipespec.ErrorHandler;
+import org.apache.camel.v1.pipespec.Sink;
+import org.apache.camel.v1.pipespec.Source;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.collections4.SetUtils;
 import org.apache.maven.execution.MavenSession;
@@ -44,7 +39,6 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectHelper;
-import com.github.sco1237896.tools.maven.connector.validator.Validator;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
 import org.codehaus.plexus.component.annotations.Requirement;
@@ -52,20 +46,29 @@ import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.impl.RemoteRepositoryManager;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.databind.node.TextNode;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.security.MessageDigest;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.ServiceLoader;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
-import groovy.lang.Binding;
-import groovy.lang.GroovyShell;
-import io.quarkus.bootstrap.BootstrapException;
-import io.quarkus.bootstrap.app.CuratedApplication;
-import io.quarkus.maven.dependency.ResolvedDependency;
-import net.javacrumbs.jsonunit.assertj.JsonAssertions;
-import net.javacrumbs.jsonunit.core.Option;
-
+import static com.github.sco1237896.tools.maven.connector.support.ConnectorConstants.CONNECTOR_REVISION;
+import static com.github.sco1237896.tools.maven.connector.support.ConnectorConstants.TRAIT_CAMEL_APACHE_ORG_CONTAINER_IMAGE;
 import static java.util.Optional.ofNullable;
-import static com.github.sco1237896.tools.maven.connector.support.CatalogSupport.asKey;
 
 @Mojo(name = "generate-catalog", defaultPhase = LifecyclePhase.PREPARE_PACKAGE, threadSafe = true, requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, requiresDependencyCollection = ResolutionScope.COMPILE_PLUS_RUNTIME)
 public class GenerateCatalogMojo extends AbstractMojo {
@@ -87,9 +90,9 @@ public class GenerateCatalogMojo extends AbstractMojo {
     @Parameter(defaultValue = "${session}", readonly = true)
     protected MavenSession session;
     @Parameter
-    private Connector defaults;
+    private ConnectorDefinition defaults;
     @Parameter
-    private List<Connector> connectors;
+    private List<ConnectorDefinition> connectors;
 
     @Parameter(defaultValue = "true", property = "connectors.catalog.validate")
     private boolean validate;
@@ -110,11 +113,6 @@ public class GenerateCatalogMojo extends AbstractMojo {
     private String containerImageBase;
     @Parameter(property = "connector.container.tag", required = true)
     private String containerImageTag;
-
-    @Parameter
-    private List<File> validators;
-    @Parameter(defaultValue = "FAIL", property = "connectors.catalog.validation.mode")
-    private Validator.Mode mode;
 
     @Parameter(defaultValue = "${project.build.outputDirectory}/META-INF/connectors")
     private File definitionPathLocal;
@@ -142,6 +140,9 @@ public class GenerateCatalogMojo extends AbstractMojo {
     @Parameter
     private Map<String, String> systemProperties;
 
+    @Parameter(defaultValue = "sco1237896.github.com", property = "annotation.prefix")
+    private String annotationsPrefix;
+
     @Component
     protected MavenProjectHelper projectHelper;
 
@@ -160,9 +161,9 @@ public class GenerateCatalogMojo extends AbstractMojo {
 
         try {
             this.manifestId = type.replace("-", "_");
-            this.indexFile = indexPath.toPath().resolve("connectors.json");
-            this.manifestFile = definitionPath.toPath().resolve(this.manifestId + ".json");
-            this.manifestLocalFile = definitionPathLocal.toPath().resolve(this.manifestId + ".json");
+            this.indexFile = indexPath.toPath().resolve("connectors.yaml");
+            this.manifestFile = definitionPath.toPath().resolve(this.manifestId + ".yaml");
+            this.manifestLocalFile = definitionPathLocal.toPath().resolve(this.manifestId + ".yaml");
             this.index = MojoSupport.load(indexFile, ConnectorIndex.class, ConnectorIndex::new);
 
             this.manifest = index.getConnectors().computeIfAbsent(this.manifestId, k -> {
@@ -176,7 +177,7 @@ public class GenerateCatalogMojo extends AbstractMojo {
             });
 
             final KameletsCatalog kameletsCatalog = KameletsCatalog.get(project, getLog());
-            final List<Connector> connectorList = MojoSupport.inject(session, defaults, connectors);
+            final List<ConnectorDefinition> connectorList = MojoSupport.inject(session, defaults, connectors);
 
             //
             // Update manifest dependencies
@@ -215,10 +216,10 @@ public class GenerateCatalogMojo extends AbstractMojo {
             // Connectors
             //
 
-            for (Connector connector : connectorList) {
-                ConnectorDefinition def = generateDefinitions(kameletsCatalog, connector);
+            for (ConnectorDefinition connector : connectorList) {
+                Pipe def = generateDefinitions(kameletsCatalog, connector);
 
-                this.manifest.getTypes().add(def.getConnectorType().getId());
+                this.manifest.getTypes().add(def.getMetadata().getAnnotations().get("sco1237896.github.com/connector.id"));
             }
 
             //
@@ -234,7 +235,7 @@ public class GenerateCatalogMojo extends AbstractMojo {
                             this.containerImagePrefix, this.type,
                             this.containerImageTag));
 
-            CatalogSupport.JSON_MAPPER.writerWithDefaultPrettyPrinter().writeValue(
+            CatalogSupport.YAML_MAPPER.writerWithDefaultPrettyPrinter().writeValue(
                     Files.newBufferedWriter(manifestLocalFile),
                     this.manifest);
 
@@ -243,220 +244,88 @@ public class GenerateCatalogMojo extends AbstractMojo {
         }
     }
 
-    private ConnectorDefinition generateDefinitions(KameletsCatalog kamelets, Connector connector)
+    private void cleanupKamelet(ObjectNode kamelet) {
+        JsonNode meta = kamelet.at("/metadata");
+        if (meta.isObject()) {
+            ((ObjectNode) meta).remove("annotations");
+            ((ObjectNode) meta).remove("labels");
+        }
+
+        JsonNode spec = kamelet.at("/spec");
+        if (spec.isObject()) {
+            ((ObjectNode) spec).remove("template");
+            ((ObjectNode) spec).remove("dependencies");
+        }
+    }
+
+    private Pipe generateDefinitions(KameletsCatalog kamelets, ConnectorDefinition definition)
             throws MojoExecutionException, MojoFailureException {
 
-        final Connector.EndpointRef kafka = connector.getKafka();
-        final Connector.EndpointRef adapter = connector.getAdapter();
-
-        if (kafka.getPrefix() == null) {
-            throw new MojoExecutionException("Kamelet Kafka prefix is required");
-        }
-        if (!Character.isLetterOrDigit(kafka.getPrefix().charAt(kafka.getPrefix().length() - 1))) {
-            throw new MojoExecutionException("Kamelet Kafka prefix should end with a letter or digit");
-        }
-        if (adapter.getPrefix() == null) {
-            throw new MojoExecutionException("Kamelet Adapter prefix is required");
-        }
-        if (!Character.isLetterOrDigit(adapter.getPrefix().charAt(connector.getAdapter().getPrefix().length() - 1))) {
-            throw new MojoExecutionException("Kamelet Adapter prefix should end with a letter or digit");
-        }
-
         try {
-            final ObjectNode adapterSpec = kamelets.kamelet(
-                    adapter.getName(),
-                    adapter.getVersion());
-            final ObjectNode kafkaSpec = kamelets.kamelet(
-                    kafka.getName(),
-                    kafka.getVersion());
-
-            final String version = ofNullable(connector.getVersion()).orElseGet(project::getVersion);
-            final String name = ofNullable(connector.getName()).orElseGet(project::getArtifactId);
-            final String title = ofNullable(connector.getTitle()).orElseGet(project::getName);
-            final String description = ofNullable(connector.getDescription()).orElseGet(project::getDescription);
-            final String type = CatalogSupport.kameletType(adapterSpec);
+            final String version = ofNullable(definition.getVersion()).orElseGet(project::getVersion);
+            final String name = ofNullable(definition.getName()).orElseGet(project::getArtifactId);
+            final String title = ofNullable(definition.getTitle()).orElseGet(project::getName);
+            final String description = ofNullable(definition.getDescription()).orElseGet(project::getDescription);
             final String id = name.replace("-", "_");
 
-            final Path definitionFile = definitionPath.toPath().resolve(id + ".json");
-            final Path definitionLocalFile = definitionPathLocal.toPath().resolve(id + ".json");
+            final Path definitionFile = definitionPath.toPath().resolve(id + ".yaml");
+            final Path definitionLocalFile = definitionPathLocal.toPath().resolve(id + ".yaml");
 
-            ConnectorDefinition def = new ConnectorDefinition();
-            def.getConnectorType().setId(id);
-            def.getConnectorType().setKind("ConnectorType");
-            def.getConnectorType().setIconRef("TODO");
-            def.getConnectorType().setName(title);
-            def.getConnectorType().setDescription(description);
-            def.getConnectorType().setVersion(version);
-            def.getConnectorType().getLabels().add(CatalogSupport.kameletType(adapterSpec));
-            def.getConnectorType().setSchema(CatalogSupport.JSON_MAPPER.createObjectNode());
-            def.getConnectorType().getSchema().put("type", "object");
-            def.getConnectorType().getSchema().put("additionalProperties", false);
+            final ConnectorDefinition.EndpointRef source = definition.getSource();
+            final ConnectorDefinition.EndpointRef sink = definition.getSink();
 
-            //
-            // Adapter
-            //
+            ObjectNode sourceKamelet = kamelets.kamelet(source.getName(), source.getVersion());
+            cleanupKamelet(sourceKamelet);
 
-            CatalogSupport.addRequired(
-                    groups,
-                    adapter,
-                    adapterSpec,
-                    def.getConnectorType().getSchema());
-            CatalogSupport.copyProperties(
-                    groups,
-                    adapter,
-                    adapterSpec,
-                    def.getConnectorType().getSchema());
+            ObjectNode sinkKamelet = kamelets.kamelet(sink.getName(), sink.getVersion());
+            cleanupKamelet(sinkKamelet);
 
-            //
-            // Kafka
-            //
+            final Pipe pipe = new Pipe();
+            pipe.setMetadata(new ObjectMeta());
+            pipe.getMetadata().setAnnotations(new TreeMap<>());
+            pipe.setSpec(new PipeSpec());
 
-            CatalogSupport.addRequired(
-                    groups,
-                    kafka,
-                    kafkaSpec,
-                    def.getConnectorType().getSchema());
-            CatalogSupport.copyProperties(
-                    groups,
-                    kafka,
-                    kafkaSpec,
-                    def.getConnectorType().getSchema());
+            var srcRef = new org.apache.camel.v1.pipespec.source.Ref();
+            srcRef.setApiVersion(HasMetadata.getApiVersion(Kamelet.class));
+            srcRef.setKind(HasMetadata.getKind(Kamelet.class));
+            srcRef.setName(source.getName());
 
-            //
-            // DataShape
-            //
+            Source src = new Source();
+            src.setRef(srcRef);
 
-            var ds = connector.getDataShape();
-            if (ds == null) {
-                ds = new Connector.DataShapeDefinition();
-            }
+            pipe.getSpec().setSource(src);
 
-            CatalogSupport.computeDataShapes(ds, adapterSpec);
+            var snkRef = new org.apache.camel.v1.pipespec.sink.Ref();
+            snkRef.setApiVersion(HasMetadata.getApiVersion(Kamelet.class));
+            snkRef.setKind(HasMetadata.getKind(Kamelet.class));
+            snkRef.setName(sink.getName());
 
-            CatalogSupport.dataShape(ds.getConsumes(), def, Connector.DataShape.Type.CONSUMES);
-            CatalogSupport.dataShape(ds.getProduces(), def, Connector.DataShape.Type.PRODUCES);
+            Sink snk = new Sink();
+            snk.setRef(snkRef);
 
-            //
-            // ErrorHandler
-            //
+            pipe.getSpec().setSink(snk);
 
-            if (connector.getErrorHandler() != null && connector.getErrorHandler().getStrategies() != null) {
-                CatalogSupport.computeErrorHandler(def, connector);
-            }
+            pipe.getMetadata().getAnnotations().put(annotationsPrefix + "/resource.type", "connector");
+            pipe.getMetadata().getAnnotations().put(annotationsPrefix + "/connector.group", catalogName);
+            pipe.getMetadata().getAnnotations().put(annotationsPrefix + "/connector.id", id);
+            pipe.getMetadata().getAnnotations().put(annotationsPrefix + "/connector.title", title);
+            pipe.getMetadata().getAnnotations().put(annotationsPrefix + "/connector.description", description);
+            pipe.getMetadata().getAnnotations().put(annotationsPrefix + "/connector.version", version);
 
-            // force capabilities if defined
-            if (connector.getCapabilities() != null) {
-                def.getConnectorType().getCapabilities().addAll(connector.getCapabilities());
-            }
+            ErrorHandler eh = new ErrorHandler();
+            eh.setAdditionalProperty("log", Map.of());
 
-            for (String capability : def.getConnectorType().getCapabilities()) {
-                switch (capability) {
-                    case CatalogConstants.CAPABILITY_PROCESSORS:
-                        def.getConnectorType().getSchema()
-                                .with("properties")
-                                .with(CatalogConstants.CAPABILITY_PROCESSORS);
-                        break;
-                    case CatalogConstants.CAPABILITY_ERROR_HANDLER:
-                        def.getConnectorType().getSchema()
-                                .with("properties")
-                                .with(CatalogConstants.CAPABILITY_ERROR_HANDLER);
-                        break;
-                    case CatalogConstants.CAPABILITY_DATA_SHAPE:
-                        def.getConnectorType().getSchema()
-                                .with("properties")
-                                .with(CatalogConstants.CAPABILITY_DATA_SHAPE);
-                        break;
-                    default:
-                        throw new IllegalArgumentException("Unsupported capability: " + capability);
-                }
-            }
+            pipe.getSpec().setErrorHandler(eh);
 
-            //
-            // channels
-            //
-
-            if (connector.getChannels() != null) {
-                for (var ch : connector.getChannels().entrySet()) {
-                    ConnectorDefinition.Channel channel = new ConnectorDefinition.Channel();
-                    ConnectorDefinition.Metadata metadata = channel.getMetadata();
-
-                    // add channel to the connector definition
-                    def.getConnectorType().getChannels().add(ch.getKey());
-
-                    def.getChannels().put(ch.getKey(), channel);
-
-                    metadata.setConnectorImage("placeholder");
-                    metadata.setConnectorRevision(this.initialRevision);
-                    metadata.setConnectorType(type);
-
-                    metadata.getOperators().add(new ConnectorDefinition.Operator(
-                            ch.getValue().getOperatorType(),
-                            ch.getValue().getOperatorVersion()));
-
-                    metadata.getKamelets().getAdapter().setName(adapter.getName());
-                    metadata.getKamelets().getAdapter().setPrefix(CatalogSupport.asKey(adapter.getPrefix()));
-
-                    metadata.getKamelets().getKafka().setName(kafka.getName());
-                    metadata.getKamelets().getKafka().setPrefix(kafka.getPrefix());
-
-                    if (Objects.equals(CatalogConstants.SOURCE, CatalogSupport.kameletType(adapterSpec))) {
-                        if (ds.getConsumes() == null && ds.getProduces() != null) {
-                            ds.setConsumes(ds.getProduces());
-                        }
-                    }
-                    if (Objects.equals(CatalogConstants.SINK, CatalogSupport.kameletType(adapterSpec))) {
-                        if (ds.getProduces() == null && ds.getConsumes() != null) {
-                            ds.setProduces(ds.getConsumes());
-                        }
-                    }
-
-                    if (ds.getConsumes() != null) {
-                        metadata.setConsumes(ds.getConsumes().getDefaultFormat());
-                        metadata.setConsumesClass(ds.getConsumes().getContentClass());
-                    }
-                    if (ds.getProduces() != null) {
-                        metadata.setProduces(ds.getProduces().getDefaultFormat());
-                        metadata.setProducesClass(ds.getProduces().getContentClass());
-                    }
-
-                    if (defaultAnnotations != null) {
-                        defaultAnnotations.stream().sorted(Comparator.comparing(Annotation::getName)).forEach(annotation -> {
-                            metadata.getAnnotations().put(annotation.getName(), annotation.getValue());
-                        });
-                    }
-
-                    if (annotations != null) {
-                        annotations.stream().sorted(Comparator.comparing(Annotation::getName)).forEach(annotation -> {
-                            metadata.getAnnotations().put(annotation.getName(), annotation.getValue());
-                        });
-                    }
-
-                    if (connector.getErrorHandler() != null && connector.getErrorHandler().getDefaultStrategy() != null) {
-                        metadata.setErrorHandlerStrategy(
-                                connector.getErrorHandler().getDefaultStrategy().name().toLowerCase(Locale.US));
-                    }
-                }
-            }
-
-            //
-            // Disable additional properties if empty capabilities
-            //
-
-            CatalogSupport.disableAdditionalProperties(
-                    def.getConnectorType().getSchema(),
-                    "/properties/" + CatalogConstants.CAPABILITY_PROCESSORS);
-            CatalogSupport.disableAdditionalProperties(
-                    def.getConnectorType().getSchema(),
-                    "/properties/" + CatalogConstants.CAPABILITY_ERROR_HANDLER);
-            CatalogSupport.disableAdditionalProperties(
-                    def.getConnectorType().getSchema(),
-                    "/properties/" + CatalogConstants.CAPABILITY_DATA_SHAPE);
+            definition.getAnnotations().forEach((k, v) -> {
+                pipe.getMetadata().getAnnotations().putIfAbsent(annotationsPrefix + "/" + k, v);
+            });
 
             //
             // Patch
             //
 
-            if (connector.getCustomizers() != null) {
+            if (definition.getCustomizers() != null) {
                 ImportCustomizer ic = new ImportCustomizer();
 
                 CompilerConfiguration cc = new CompilerConfiguration();
@@ -465,18 +334,19 @@ public class GenerateCatalogMojo extends AbstractMojo {
                 ClassLoader cl = Thread.currentThread().getContextClassLoader();
 
                 Binding binding = new Binding();
-                binding.setProperty("mapper", CatalogSupport.JSON_MAPPER);
+                binding.setProperty("mapper", CatalogSupport.YAML_MAPPER);
                 binding.setProperty("log", getLog());
-                binding.setProperty("connector", connector);
-                binding.setProperty("definition", def);
-                binding.setProperty("schema", def.getConnectorType().getSchema());
+                binding.setProperty("connector", definition);
+                binding.setProperty("pipe", pipe);
+                binding.setProperty("pipe", pipe);
+                binding.setProperty("pipe", pipe);
 
-                for (File customizer : connector.getCustomizers()) {
+                for (File customizer : definition.getCustomizers()) {
                     if (!Files.exists(customizer.toPath())) {
                         continue;
                     }
 
-                    getLog().info("Customizing: " + connector.getName() + " with customizer " + customizer);
+                    getLog().info("Customizing: " + definition.getName() + " with customizer " + customizer);
 
                     new GroovyShell(cl, binding, cc).run(customizer, new String[] {});
                 }
@@ -486,20 +356,32 @@ public class GenerateCatalogMojo extends AbstractMojo {
             // Revision
             //
 
+            Map<String, Object> def = new TreeMap<>();
+            def.put("definition", pipe);
+            def.put("resources", List.of(sourceKamelet, sinkKamelet));
+
             try {
                 if (Files.exists(definitionFile)) {
-                    JsonNode newSchema = CatalogSupport.JSON_MAPPER.convertValue(def, ObjectNode.class);
-                    JsonNode oldSchema = CatalogSupport.JSON_MAPPER.readValue(definitionFile.toFile(), JsonNode.class);
+                    JsonNode newSchema = CatalogSupport.YAML_MAPPER.convertValue(def, ObjectNode.class);
+                    JsonNode oldSchema = CatalogSupport.YAML_MAPPER.readValue(definitionFile.toFile(), JsonNode.class);
+
+                    JsonNode annotations = oldSchema.at("/definition/metadata/annotations");
+                    if (!annotations.isMissingNode() && annotations.isObject()) {
+                        ((ObjectNode) annotations).remove(TRAIT_CAMEL_APACHE_ORG_CONTAINER_IMAGE);
+                        ((ObjectNode) annotations).remove(annotationsPrefix + "/connector.revision");
+                    }
 
                     JsonAssertions.assertThatJson(oldSchema)
-                            .when(Option.IGNORING_ARRAY_ORDER)
-                            .whenIgnoringPaths(
-                                    "$.channels.*.shard_metadata.connector_image",
-                                    "$.channels.*.shard_metadata.connector_revision")
+                            // for some reason this does not seem to be working even if the json path is correct
+                            //
+                            //.whenIgnoringPaths(
+                            //    "$.definition.metadata.annotations['" + TRAIT_CAMEL_APACHE_ORG_CONTAINER_IMAGE + "']",
+                            //    "$.definition.metadata.annotations['" + CONNECTOR_REVISION + "']")
                             .withDifferenceListener((difference, context) -> {
-                                getLog().info("diff: " + difference.toString());
+                                getLog().info("diff: " + difference);
                                 manifest.bump();
                             })
+                            .when(Option.IGNORING_ARRAY_ORDER)
                             .isEqualTo(newSchema);
                 }
             } catch (AssertionError e) {
@@ -510,38 +392,18 @@ public class GenerateCatalogMojo extends AbstractMojo {
             // Images
             //
 
-            if (connector.getChannels() != null) {
-                for (var ch : connector.getChannels().entrySet()) {
-                    ConnectorDefinition.Metadata metadata = def.getChannels().get(ch.getKey()).getMetadata();
+            String image = String.format("%s/%s/%s-%s:%s",
+                    this.containerImageRegistry,
+                    this.containerImageOrg,
+                    this.containerImagePrefix, this.type,
+                    this.containerImageTag);
 
-                    String image = String.format("%s/%s/%s-%s:%s",
-                            this.containerImageRegistry,
-                            this.containerImageOrg,
-                            this.containerImagePrefix, this.type,
-                            this.containerImageTag);
-
-                    metadata.setConnectorRevision(this.manifest.getRevision());
-                    metadata.setConnectorImage(image);
-                }
-            }
-
-            //
-            // As Json
-            //
-
-            ObjectNode definition = CatalogSupport.JSON_MAPPER.convertValue(def, ObjectNode.class);
-
-            if (connector.allowProcessors()) {
-                importProcessorSchema(definition);
-            }
-
-            //
-            // Validate
-            //
-
-            if (validate) {
-                validateConnector(connector, definition);
-            }
+            pipe.getMetadata().getAnnotations().put(
+                    TRAIT_CAMEL_APACHE_ORG_CONTAINER_IMAGE,
+                    image);
+            pipe.getMetadata().getAnnotations().put(
+                    annotationsPrefix + "/connector.revision",
+                    Integer.toString(this.manifest.getRevision()));
 
             //
             // Write Definition
@@ -551,81 +413,14 @@ public class GenerateCatalogMojo extends AbstractMojo {
 
             getLog().info("Writing connector definition to: " + definitionLocalFile);
 
-            CatalogSupport.JSON_MAPPER.writerWithDefaultPrettyPrinter().writeValue(
+            CatalogSupport.YAML_MAPPER.writerWithDefaultPrettyPrinter().writeValue(
                     Files.newBufferedWriter(definitionLocalFile),
-                    definition);
+                    def);
 
-            return def;
+            return pipe;
 
         } catch (IOException e) {
             throw new MojoExecutionException("", e);
-        }
-    }
-
-    private void importProcessorSchema(ObjectNode definition) throws IOException {
-        ObjectNode dslDefinitions = (ObjectNode) CatalogSupport.JSON_MAPPER.readTree(
-                Thread.currentThread().getContextClassLoader().getResourceAsStream(
-                        "schema/camel-yaml-dsl-restricted.json"));
-        dslDefinitions = (ObjectNode) dslDefinitions.get("items").get("definitions");
-        final ObjectNode schema = (ObjectNode) definition.get("connector_type").get("schema");
-        if (!schema.has("$defs")) {
-            schema.set("$defs", CatalogSupport.JSON_MAPPER.createObjectNode());
-        }
-        final ObjectNode schemaDefs = (ObjectNode) schema.get("$defs");
-        dslDefinitions.fields().forEachRemaining((e) -> {
-            ((ObjectNode) e.getValue()).findParents("$ref").forEach((refParent) -> {
-                String updatedRef = refParent.get("$ref").asText().replace("#/items/definitions", "#/$defs");
-                ((ObjectNode) refParent).set("$ref", new TextNode(updatedRef));
-            });
-            schemaDefs.set(e.getKey(), e.getValue());
-        });
-
-        ObjectNode processors = CatalogSupport.JSON_MAPPER.createObjectNode();
-        processors.set("type", new TextNode("array"));
-        ObjectNode items = CatalogSupport.JSON_MAPPER.createObjectNode();
-        items.set("$ref", new TextNode("#/$defs/org.apache.camel.model.ProcessorDefinition"));
-        processors.set("items", items);
-        if (!schema.has("properties")) {
-            schema.set("properties", CatalogSupport.JSON_MAPPER.createObjectNode());
-        }
-        final ObjectNode schemaProperties = (ObjectNode) schema.get("properties");
-        schemaProperties.set("processors", processors);
-    }
-
-    private void validateConnector(Connector connector, ObjectNode definition)
-            throws MojoExecutionException, MojoFailureException {
-
-        try {
-            final Validator.Context context = of(connector);
-
-            for (Validator validator : ServiceLoader.load(Validator.class)) {
-                getLog().info("Validating: " + connector.getName() + " with validator " + validator);
-                validator.validate(context, definition);
-            }
-
-            if (validators != null) {
-                ImportCustomizer ic = new ImportCustomizer();
-
-                CompilerConfiguration cc = new CompilerConfiguration();
-                cc.addCompilationCustomizers(ic);
-
-                ClassLoader cl = Thread.currentThread().getContextClassLoader();
-
-                Binding binding = new Binding();
-                binding.setProperty("context", context);
-                binding.setProperty("schema", definition);
-
-                for (File validator : validators) {
-                    if (!Files.exists(validator.toPath())) {
-                        return;
-                    }
-
-                    getLog().info("Validating: " + connector.getName() + " with validator " + validator);
-                    new GroovyShell(cl, binding, cc).run(validator, new String[] {});
-                }
-            }
-        } catch (AssertionError | Exception e) {
-            throw new MojoFailureException(e);
         }
     }
 
@@ -727,29 +522,5 @@ public class GenerateCatalogMojo extends AbstractMojo {
         provider.setSession(this.session);
 
         return provider;
-    }
-
-    private Validator.Context of(Connector connector) {
-        return new Validator.Context() {
-            @Override
-            public Path getCatalogPath() {
-                return definitionPath.toPath();
-            }
-
-            @Override
-            public Connector getConnector() {
-                return connector;
-            }
-
-            @Override
-            public Log getLog() {
-                return GenerateCatalogMojo.this.getLog();
-            }
-
-            @Override
-            public Validator.Mode getMode() {
-                return mode;
-            }
-        };
     }
 }

@@ -19,7 +19,7 @@ class ElasticsearchConnectorIT extends KafkaConnectorSpec {
 
     def "elasticsearch sink"(String alias, String user, String password) {
         setup:
-            def elastic = elasticsearchContainer(KafkaConnectorSpec.network, alias, user, password)
+            def elastic = elasticsearchContainer(network, alias, user, password)
             elastic.start()
 
             def topic = topic()
@@ -31,32 +31,37 @@ class ElasticsearchConnectorIT extends KafkaConnectorSpec {
             def search = new Request("GET", "/${topic}/_search")
 
             def props = [
-                'kafka_topic' : topic,
-                'kafka_bootstrap_servers': KafkaConnectorSpec.kafka.outsideBootstrapServers,
-                'kafka_consumer_group': UUID.randomUUID().toString(),
-                'elasticsearch_host_addresses': alias,
-                'elasticsearch_cluster_name': topic,
-                'elasticsearch_enable_s_s_l': 'false'
+                'hostAddresses': alias,
+                'clusterName': topic,
+                'enableSSL': 'false'
             ]
 
             if (user != null && password != null) {
-                props['elasticsearch_user'] = user
-                props['elasticsearch_password'] = password
+                props['user'] = user
+                props['password'] = password
             }
 
-            def cnt = connectorContainer('elasticsearch_sink_v1.json', props)
+
+            def cnt = forDefinition('elasticsearch_sink_v1.yaml')
+                .withSourceProperties([
+                        'topic': topic,
+                        'bootstrapServers': kafka.outsideBootstrapServers,
+                        'consumerGroup': UUID.randomUUID().toString(),
+                ])
+                .withSinkProperties(props)
+                .build()
 
             cnt.withUserProperty('quarkus.log.category."org.apache.camel.component.elasticsearch".level', 'DEBUG')
             cnt.start()
 
         when:
-        KafkaConnectorSpec.kafka.send(topic, payload, [
+            kafka.send(topic, payload, [
                 'indexId': topic,
                 'indexName': topic
             ])
 
         then:
-            def records = KafkaConnectorSpec.kafka.poll(topic)
+            def records = kafka.poll(topic)
             records.size() == 1
             records.first().value() == payload
 

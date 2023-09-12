@@ -1,15 +1,14 @@
 package com.github.sco1237896.connector.it.social.telegram
 
-import groovy.util.logging.Slf4j
-import com.github.sco1237896.connector.it.support.ConnectorContainer
 import com.github.sco1237896.connector.it.support.SimpleConnectorSpec
+import groovy.util.logging.Slf4j
 
 @Slf4j
 class TelegramConnectorContainerIT extends SimpleConnectorSpec {
 
     def "container image exposes health and metrics"(String definition) {
         setup:
-            def cnt = ConnectorContainer.forDefinition(definition).build()
+            def cnt = forDefinition(definition).build()
             cnt.start()
         when:
             def health = cnt.request.get('/q/health')
@@ -28,8 +27,8 @@ class TelegramConnectorContainerIT extends SimpleConnectorSpec {
             closeQuietly(cnt)
         where:
             definition << [
-                'telegram_sink_v1.json',
-                'telegram_source_v1.json'
+                'telegram_sink_v1.yaml',
+                'telegram_source_v1.yaml'
             ]
     }
 }

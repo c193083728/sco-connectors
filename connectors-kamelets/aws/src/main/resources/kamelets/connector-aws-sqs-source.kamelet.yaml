@@ -87,17 +87,6 @@ spec:
         x-descriptors:
         - urn:keda:metadata:queueURL
         - urn:keda:required
-      uriEndpointOverride:
-        title: Overwrite Endpoint URI
-        description: The overriding endpoint URI. To use this option, you must also select the `overrideEndpoint` option.
-        type: string
-      overrideEndpoint:
-        title: Endpoint Overwrite
-        description: Select this option to override the endpoint URI. To use this option, you must also provide a URI for the `uriEndpointOverride` option.
-        type: boolean
-        x-descriptors:
-          - 'urn:alm:descriptor:com.tectonic.ui:checkbox'
-        default: false
       delay:
         title: Delay
         description: The number of milliseconds before the next poll of the selected stream
@@ -118,8 +107,6 @@ spec:
         amazonAWSHost: "{{?amazonAWSHost}}"
         protocol: "{{?protocol}}"
         useDefaultCredentialsProvider: "false"
-        uriEndpointOverride: "{{?uriEndpointOverride}}"
-        overrideEndpoint: "{{overrideEndpoint}}"
         delay: "{{delay}}"
       steps:
       - to: "kamelet:sink"

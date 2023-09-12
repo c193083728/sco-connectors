@@ -37,15 +37,18 @@ class AzureStorageBlobChangefeedConnectorIT extends KafkaConnectorSpec {
             def bc = client.getBlobClient(topic)
             def start = Instant.now()
 
-            def cnt = connectorContainer('azure_storage_blob_changefeed_source_v1.json', [
-                'kafka_topic' : topic,
-                'kafka_bootstrap_servers': KafkaConnectorSpec.kafka.outsideBootstrapServers,
-                'kafka_consumer_group': group,
-                'azure_period': '5000',
-                'azure_account_name': accountName,
-                'azure_access_key': accountKey
-            ])
-
+             def cnt = forDefinition('mongodb_source_v1.yaml')
+                .withSinkProperties([
+                        'topic': topic,
+                        'bootstrapServers': kafka.outsideBootstrapServers,
+                        'consumerGroup': UUID.randomUUID().toString(),
+                ])
+                .withSourceProperties([
+                    'period': '5000',
+                    'accountName': accountName,
+                    'accessKey': accountKey
+                ])
+                .build()
             cnt.start()
 
         when:
@@ -55,7 +58,7 @@ class AzureStorageBlobChangefeedConnectorIT extends KafkaConnectorSpec {
             //XXX: unfortunately events take a while to be available in the changefeed
             await(300, TimeUnit.SECONDS) {
                     try {
-                        KafkaConnectorSpec.kafka.poll(group, topic).any {
+                        kafka.poll(group, topic).any {
                             log.info("RECORD = {} is {}", topic, new JsonSlurper().parseText(it.value()).blobUrl)
                             return it.value() != null
                                     && it.value().contains(topic)

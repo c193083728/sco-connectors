@@ -20,7 +20,6 @@
     <modules>
         <module>jms-amqp-it</module>
         <module>http-it</module>
-        <module>openapi-it</module>
     </modules>
 
 </project>

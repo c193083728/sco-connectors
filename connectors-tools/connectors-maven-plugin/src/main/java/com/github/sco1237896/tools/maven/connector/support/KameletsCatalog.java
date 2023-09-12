@@ -51,7 +51,7 @@ public final class KameletsCatalog {
         List<ObjectNode> kamelets = getKamelets().stream()
                 .filter(node -> Objects.equals(name, CatalogSupport.kameletName(node)))
                 .filter(node -> Objects.equals(version, CatalogSupport.kameletVersion(node)))
-                .collect(Collectors.toList());
+                .toList();
 
         if (kamelets.isEmpty()) {
             throw new IllegalArgumentException(
@@ -62,7 +62,7 @@ public final class KameletsCatalog {
                     "Multiple kamelet with name " + name + " and version " + version);
         }
 
-        return kamelets.get(0);
+        return kamelets.get(0).deepCopy();
     }
 
     public static KameletsCatalog get(MavenProject project, Log log) throws Exception {

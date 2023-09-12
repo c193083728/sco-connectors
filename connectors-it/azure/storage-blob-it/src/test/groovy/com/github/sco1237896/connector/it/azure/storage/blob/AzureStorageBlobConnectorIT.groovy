@@ -32,22 +32,27 @@ class AzureStorageBlobConnectorIT extends KafkaConnectorSpec {
             def accountKey = System.getenv('AZURE_BLOB_ACCESS_KEY')
             def client = containerClient(accountName, accountKey, containerName)
 
-            def cnt = connectorContainer('azure_storage_blob_sink_v1.json', [
-                'kafka_topic' : topic,
-                'kafka_bootstrap_servers': KafkaConnectorSpec.kafka.outsideBootstrapServers,
-                'azure_account_name': accountName,
-                'azure_container_name': containerName,
-                'azure_access_key': accountKey,
-                'azure_operation': 'uploadBlockBlob'
-            ])
+            def cnt = forDefinition('azure_storage_blob_sink_v1.yaml')
+                .withSourceProperties([
+                    'topic': topic,
+                    'bootstrapServers': kafka.outsideBootstrapServers,
+                    'consumerGroup': UUID.randomUUID().toString(),
+                ])
+                .withSinkProperties([
+                    'accountName': accountName,
+                    'containerName': containerName,
+                    'accessKey': accountKey,
+                    'operation': 'uploadBlockBlob'
+                ])
+                .build()
 
             cnt.start()
 
         when:
-        KafkaConnectorSpec.kafka.send(topic, payload)
+            kafka.send(topic, payload)
 
         then:
-            def records = KafkaConnectorSpec.kafka.poll(topic)
+            def records = kafka.poll(topic)
             records.size() == 1
             records.first().value() == payload
 
@@ -87,20 +92,23 @@ class AzureStorageBlobConnectorIT extends KafkaConnectorSpec {
             def bc = client.getBlobClient(topic)
             def start = Instant.now()
 
+            def cnt = forDefinition('azure_storage_blob_source_v1.yaml')
+                .withSinkProperties([
+                        'topic': topic,
+                        'bootstrapServers': kafka.outsideBootstrapServers,
+                        'consumerGroup': UUID.randomUUID().toString(),
+                ])
+                .withSourceProperties([
+                        'accountName': accountName,
+                        'containerName': containerName,
+                        'accessKey': accountKey,
 
-            def cnt = connectorContainer('azure_storage_blob_source_v1.json', [
-                'kafka_topic' : topic,
-                'kafka_bootstrap_servers': KafkaConnectorSpec.kafka.outsideBootstrapServers,
-                'kafka_consumer_group': group,
-                'azure_account_name': accountName,
-                'azure_container_name': containerName,
-                'azure_access_key': accountKey,
-
-                // keep this set to false for tests as it would delete all
-                // the blobs it finds causing other tests running in parallel
-                // to fail or become flaky
-                "azure_delete_after_read": "false"
-            ])
+                        // keep this set to false for tests as it would delete all
+                        // the blobs it finds causing other tests running in parallel
+                        // to fail or become flaky
+                        "deleteAfterRead": "false"
+                ])
+                .build()
 
             cnt.start()
 
@@ -109,7 +117,7 @@ class AzureStorageBlobConnectorIT extends KafkaConnectorSpec {
 
         then:
             await(10, TimeUnit.SECONDS) {
-                def record = KafkaConnectorSpec.kafka.poll(group, topic).find {
+                def record = kafka.poll(group, topic).find {
                     it.value() == payload && Instant.ofEpochMilli(it.timestamp()).isAfter(start)
                 }
 

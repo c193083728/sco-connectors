@@ -28,7 +28,7 @@ class ElasticsearchConnectorContainerIT extends SimpleConnectorSpec {
             closeQuietly(cnt)
         where:
             definition << [
-                'elasticsearch_sink_v1.json',
+                'elasticsearch_sink_v1.yaml',
             ]
     }
 }

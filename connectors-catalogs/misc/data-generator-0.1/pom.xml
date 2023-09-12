@@ -39,23 +39,14 @@
                             <name>${connector.type}-source-${connector.version}</name>
                             <title>${project.name} source</title>
                             <description>A data generator (for development and testing purposes).</description>
-                            <adapter>
-                                <prefix>timer</prefix>
+                            <source>
                                 <name>connector-${connector.type}-source</name>
                                 <version>${connector.kamelets.version}</version>
-                            </adapter>
-                            <kafka>
-                                <prefix>kafka</prefix>
+                            </source>
+                            <sink>
                                 <name>connector-kafka-sink</name>
                                 <version>${connector.kamelets.version}</version>
-                            </kafka>
-                            <dataShape>
-                                <produces>
-                                    <formats>
-                                        <format>application/octet-stream</format>
-                                    </formats>
-                                </produces>
-                            </dataShape>
+                            </sink>
                         </connector>
                     </connectors>
                 </configuration>

@@ -39,8 +39,8 @@ public class AppBootstrapProvider {
     private RemoteRepositoryManager remoteRepoManager;
     private String camelQuarkusVersion;
     private MavenSession session;
-    private Connector defaults;
-    private List<Connector> connectors;
+    private ConnectorDefinition defaults;
+    private List<ConnectorDefinition> connectors;
     private MavenProject project;
     private Log log;
     private String finalName;
@@ -97,19 +97,19 @@ public class AppBootstrapProvider {
         this.session = session;
     }
 
-    public Connector getDefaults() {
+    public ConnectorDefinition getDefaults() {
         return defaults;
     }
 
-    public void setDefaults(Connector defaults) {
+    public void setDefaults(ConnectorDefinition defaults) {
         this.defaults = defaults;
     }
 
-    public List<Connector> getConnectors() {
+    public List<ConnectorDefinition> getConnectors() {
         return connectors;
     }
 
-    public void setConnectors(List<Connector> connectors) {
+    public void setConnectors(List<ConnectorDefinition> connectors) {
         this.connectors = connectors;
     }
 
@@ -206,11 +206,11 @@ public class AppBootstrapProvider {
                             dependency.getVersion()));
         }
 
-        getLog().info("Project dependencies:");
+        getLog().debug("Project dependencies:");
         projectDependencies.stream()
                 .distinct()
                 .sorted(Comparator.comparing(ConnectorDependency::toString))
-                .forEach(d -> getLog().info("- " + d));
+                .forEach(d -> getLog().debug("- " + d));
 
         final Properties projectProperties = project.getProperties();
         final Properties effectiveProperties = new Properties();

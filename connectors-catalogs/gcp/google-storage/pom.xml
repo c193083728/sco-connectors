@@ -32,45 +32,27 @@
                             <name>${connector.type}-source-${connector.version}</name>
                             <title>${project.name} source</title>
                             <description>Send messages to Google Pubsub.</description>
-                            <adapter>
-                                <prefix>gcp</prefix>
+                            <source>
                                 <name>connector-${connector.type}-source</name>
                                 <version>${connector.kamelets.version}</version>
-                            </adapter>
-                            <kafka>
-                                <prefix>kafka</prefix>
+                            </source>
+                            <sink>
                                 <name>connector-kafka-sink</name>
                                 <version>${connector.kamelets.version}</version>
-                            </kafka>
-                            <dataShape>
-                                <produces>
-                                    <formats>
-                                        <format>application/octet-stream</format>
-                                    </formats>
-                                </produces>
-                            </dataShape>
+                            </sink>
                         </connector>
                         <connector>
                             <name>${connector.type}-sink-${connector.version}</name>
                             <title>${project.name} sink</title>
                             <description>Upload data to Google Cloud Storage.</description>
-                            <adapter>
-                                <prefix>gcp</prefix>
+                            <sink>
                                 <name>connector-${connector.type}-sink</name>
                                 <version>${connector.kamelets.version}</version>
-                            </adapter>
-                            <kafka>
-                                <prefix>kafka</prefix>
+                            </sink>
+                            <source>
                                 <name>connector-kafka-source</name>
                                 <version>${connector.kamelets.version}</version>
-                            </kafka>
-                            <dataShape>
-                                <consumes>
-                                    <formats>
-                                        <format>application/octet-stream</format>
-                                    </formats>
-                                </consumes>
-                            </dataShape>
+                            </source>
                         </connector>
                     </connectors>
                 </configuration>

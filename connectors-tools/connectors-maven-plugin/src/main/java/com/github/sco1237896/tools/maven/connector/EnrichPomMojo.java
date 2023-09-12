@@ -11,7 +11,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import com.github.sco1237896.tools.maven.connector.support.Builders;
-import com.github.sco1237896.tools.maven.connector.support.Connector;
+import com.github.sco1237896.tools.maven.connector.support.ConnectorDefinition;
 import com.github.sco1237896.tools.maven.connector.support.ConnectorDependency;
 import com.github.sco1237896.tools.maven.connector.support.ConnectorSupport;
 import com.github.sco1237896.tools.maven.connector.support.KameletsCatalog;
@@ -45,9 +45,9 @@ public class EnrichPomMojo extends AbstractMojo {
     @Parameter(defaultValue = "${session}", readonly = true)
     protected MavenSession session;
     @Parameter
-    private Connector defaults;
+    private ConnectorDefinition defaults;
     @Parameter
-    private List<Connector> connectors;
+    private List<ConnectorDefinition> connectors;
     @Parameter
     private List<String> bannedDependencies;
 
@@ -121,7 +121,7 @@ public class EnrichPomMojo extends AbstractMojo {
         Set<ConnectorDependency> result = new TreeSet<>(Comparator.comparing(ConnectorDependency::toString));
 
         try {
-            for (Connector connector : MojoSupport.inject(session, defaults, connectors)) {
+            for (ConnectorDefinition connector : MojoSupport.inject(session, defaults, connectors)) {
                 Collection<ConnectorDependency> deps = ConnectorSupport.dependencies(
                         getLog(),
                         KameletsCatalog.get(project, getLog()),

@@ -70,17 +70,6 @@ spec:
         description: Defines where in the DynamoDB stream to start getting records. There are two enums and the value can be one of FROM_LATEST and FROM_START. Note that using FROM_START can cause a significant delay before the stream has caught up to real-time.
         type: string
         default: FROM_LATEST
-      uriEndpointOverride:
-        title: Overwrite Endpoint URI
-        description: The overriding endpoint URI. To use this option, you must also select the `overrideEndpoint` option.
-        type: string
-      overrideEndpoint:
-        title: Endpoint Overwrite
-        description: Select this option to override the endpoint URI. To use this option, you must also provide a URI for the `uriEndpointOverride` option.
-        type: boolean
-        x-descriptors:
-          - 'urn:alm:descriptor:com.tectonic.ui:checkbox'
-        default: false
       delay:
         title: Delay
         description: The number of milliseconds before the next poll from the database.
@@ -102,8 +91,6 @@ spec:
         region: "{{region}}"
         streamIteratorType: "{{streamIteratorType}}"
         useDefaultCredentialsProvider: "false"
-        uriEndpointOverride: "{{?uriEndpointOverride}}"
-        overrideEndpoint: "{{overrideEndpoint}}"
         delay: "{{delay}}"
       steps:
       - marshal:

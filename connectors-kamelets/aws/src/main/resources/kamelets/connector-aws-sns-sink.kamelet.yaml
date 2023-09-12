@@ -57,17 +57,6 @@ spec:
         x-descriptors:
         - 'urn:alm:descriptor:com.tectonic.ui:checkbox'
         default: false
-      uriEndpointOverride:
-        title: Overwrite Endpoint URI
-        description: The overriding endpoint URI. To use this option, you must also select the `overrideEndpoint` option.
-        type: string
-      overrideEndpoint:
-        title: Endpoint Overwrite
-        description: Select this option to override the endpoint URI. To use this option, you must also provide a URI for the `uriEndpointOverride` option.
-        type: boolean
-        x-descriptors:
-          - 'urn:alm:descriptor:com.tectonic.ui:checkbox'
-        default: false
   dependencies:
     - "camel:core"
     - "camel:aws2-sns"
@@ -96,5 +85,3 @@ spec:
             secretKey: "{{?secretKey}}"
             region: "{{region}}"
             useDefaultCredentialsProvider: "false"
-            uriEndpointOverride: "{{?uriEndpointOverride}}"
-            overrideEndpoint: "{{overrideEndpoint}}"

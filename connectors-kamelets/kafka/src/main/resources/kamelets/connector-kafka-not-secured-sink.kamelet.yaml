@@ -60,6 +60,9 @@ spec:
                 simple: "${header[partition-key]}"
       - process:
           ref: "{{add-exception-processor}}"
+      - convertBodyTo:
+          type: "byte[]"
+          charset: "UTF8"
       - to:
           uri: "kafka:{{topic}}"
           parameters:

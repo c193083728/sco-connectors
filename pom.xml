@@ -9,13 +9,14 @@
     <version>999-SNAPSHOT</version>
 
     <properties>
-        <encoding>UTF-8</encoding>
+        <resources.encoding>UTF-8</resources.encoding>
 
-        <project.build.sourceEncoding>${encoding}</project.build.sourceEncoding>
-        <project.reporting.outputEncoding>${encoding}</project.reporting.outputEncoding>
-        <project.resources.sourceEncoding>${encoding}</project.resources.sourceEncoding>
+        <project.build.sourceEncoding>${resources.encoding}</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>${resources.encoding}</project.reporting.outputEncoding>
+        <project.resources.sourceEncoding>${resources.encoding}</project.resources.sourceEncoding>
 
         <quarkus.version>2.13.0.Final</quarkus.version>
+        <camel-k.version>2.0.1</camel-k.version>
         <camel-k-runtime.version>1.15.0</camel-k-runtime.version>
         <camel-quarkus.version>2.13.0</camel-quarkus.version>
         <camel.version>3.18.2</camel.version>
@@ -92,7 +93,7 @@
         <connector.catalog.group>all</connector.catalog.group>
 
         <connector.version>v1</connector.version>
-        <connector.initial-revision>70</connector.initial-revision>
+        <connector.initial-revision>1</connector.initial-revision>
         <connector.operator.version>[1.0.0,2.0.0)</connector.operator.version>
         <connector.kamelets.version>0.0.1</connector.kamelets.version>
 
@@ -616,6 +617,11 @@
                 <groupId>com.azure</groupId>
                 <artifactId>azure-storage-blob-changefeed</artifactId>
                 <version>${azure-storage-blob-changefeed.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.camel.k</groupId>
+                <artifactId>camel-k-crds</artifactId>
+                <version>${camel-k.version}</version>
             </dependency>
 
             <dependency>

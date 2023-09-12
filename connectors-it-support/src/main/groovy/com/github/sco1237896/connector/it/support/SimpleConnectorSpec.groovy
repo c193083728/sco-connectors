@@ -13,4 +13,13 @@ abstract class SimpleConnectorSpec extends ConnectorSpecSupport {
             .setAccept(ContentType.JSON)
             .build()
     }
+
+
+    ConnectorContainer.Builder forDefinition(String definition) {
+        if (!definition.endsWith('.yaml')) {
+            definition += '.yaml'
+        }
+
+        return ConnectorContainer.forDefinition(definition)
+    }
 }

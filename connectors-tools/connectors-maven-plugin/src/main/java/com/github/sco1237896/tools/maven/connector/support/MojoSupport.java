@@ -59,7 +59,8 @@ public final class MojoSupport {
         }
     }
 
-    public static List<Connector> inject(MavenSession session, Connector defaults, List<Connector> connectors)
+    public static List<ConnectorDefinition> inject(MavenSession session, ConnectorDefinition defaults,
+            List<ConnectorDefinition> connectors)
             throws MojoExecutionException {
 
         if (connectors == null) {
@@ -73,27 +74,15 @@ public final class MojoSupport {
         try {
             MojoSupport.inject(expressionEvaluator, defaults);
 
-            for (Connector connector : connectors) {
+            for (ConnectorDefinition connector : connectors) {
                 MojoSupport.inject(expressionEvaluator, connector);
 
                 if (defaults != null) {
                     if (connector.getCustomizers() == null) {
                         connector.setCustomizers(defaults.getCustomizers());
                     }
-                    if (connector.getCapabilities() == null) {
-                        connector.setCapabilities(defaults.getCapabilities());
-                    }
-                    if (connector.getDataShape() == null) {
-                        connector.setDataShape(defaults.getDataShape());
-                    }
-                    if (connector.getChannels() == null) {
-                        connector.setChannels(defaults.getChannels());
-                    }
-                    if (connector.getErrorHandler() == null) {
-                        connector.setErrorHandler(defaults.getErrorHandler());
-                    }
-                    if (!connector.allowProcessors()) {
-                        connector.setAllowProcessors(defaults.allowProcessors());
+                    if (connector.getAnnotations() == null) {
+                        connector.setAnnotations(defaults.getAnnotations());
                     }
                 }
             }
@@ -106,7 +95,7 @@ public final class MojoSupport {
 
     public static <T> T load(Path path, Class<T> type, Supplier<T> supplier) throws IOException {
         if (Files.exists(path)) {
-            return CatalogSupport.JSON_MAPPER.readValue(path.toFile(), type);
+            return CatalogSupport.YAML_MAPPER.readValue(path.toFile(), type);
         }
 
         return supplier.get();

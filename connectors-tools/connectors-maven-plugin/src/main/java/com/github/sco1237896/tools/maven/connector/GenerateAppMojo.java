@@ -10,7 +10,7 @@ import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
-import com.github.sco1237896.tools.maven.connector.support.Connector;
+import com.github.sco1237896.tools.maven.connector.support.ConnectorDefinition;
 import com.github.sco1237896.tools.maven.connector.support.MojoSupport;
 
 import java.io.File;
@@ -66,9 +66,9 @@ public class GenerateAppMojo extends BuildMojo {
     private String camelQuarkusVersion;
 
     @Parameter
-    private Connector defaults;
+    private ConnectorDefinition defaults;
     @Parameter
-    private List<Connector> connectors;
+    private List<ConnectorDefinition> connectors;
     @Parameter
     private List<String> bannedDependencies;
 
@@ -88,8 +88,8 @@ public class GenerateAppMojo extends BuildMojo {
 
         try {
             this.manifestId = type.replace("-", "_");
-            this.indexFile = indexPath.toPath().resolve("connectors.json");
-            this.manifestLocalFile = definitionPathLocal.toPath().resolve(this.manifestId + ".json");
+            this.indexFile = indexPath.toPath().resolve("connectors.yaml");
+            this.manifestLocalFile = definitionPathLocal.toPath().resolve(this.manifestId + ".yaml");
 
             if (!Files.exists(manifestLocalFile) && !exclude) {
                 getLog().warn("Skipping App build as the definition file " + manifestLocalFile.getFileName() + " is missing");
@@ -97,7 +97,7 @@ public class GenerateAppMojo extends BuildMojo {
             }
 
             this.index = MojoSupport.load(indexFile, ConnectorIndex.class, ConnectorIndex::new);
-            this.manifestLocal = CatalogSupport.JSON_MAPPER.readValue(manifestLocalFile.toFile(), ConnectorManifest.class);
+            this.manifestLocal = CatalogSupport.YAML_MAPPER.readValue(manifestLocalFile.toFile(), ConnectorManifest.class);
             this.manifest = index.getConnectors().get(this.manifestId);
 
             Files.createDirectories(definitionPath.toPath());
@@ -161,8 +161,8 @@ public class GenerateAppMojo extends BuildMojo {
                 this.index.getConnectors().put(this.manifestId, this.manifestLocal);
 
                 for (String type : this.manifestLocal.getTypes()) {
-                    Path src = definitionPathLocal.toPath().resolve(type + ".json");
-                    Path dst = definitionPath.toPath().resolve(type + ".json");
+                    Path src = definitionPathLocal.toPath().resolve(type + ".yaml");
+                    Path dst = definitionPath.toPath().resolve(type + ".yaml");
 
                     getLog().info("Copy connector definition " + src + " to " + dst);
 
@@ -175,7 +175,7 @@ public class GenerateAppMojo extends BuildMojo {
 
             getLog().info("Writing connector index to: " + this.indexFile);
 
-            CatalogSupport.JSON_MAPPER.writerWithDefaultPrettyPrinter().writeValue(
+            CatalogSupport.YAML_MAPPER.writerWithDefaultPrettyPrinter().writeValue(
                     Files.newBufferedWriter(this.indexFile),
                     this.index);
 
@@ -195,16 +195,16 @@ public class GenerateAppMojo extends BuildMojo {
 
         index.getConnectors().forEach((k, v) -> {
             for (String type : v.getTypes()) {
-                definitions.add(indexPath.toPath().resolve(v.getCatalog()).resolve(type + ".json"));
+                definitions.add(indexPath.toPath().resolve(v.getCatalog()).resolve(type + ".yaml"));
             }
         });
 
         try (Stream<Path> files = Files.walk(indexPath.toPath())) {
-            for (Path file : files.collect(Collectors.toList())) {
+            for (Path file : files.toList()) {
                 if (!Files.isRegularFile(file)) {
                     continue;
                 }
-                if (file.getFileName().toString().equals("connectors.json")) {
+                if (file.getFileName().toString().equals("connectors.yaml")) {
                     continue;
                 }
 

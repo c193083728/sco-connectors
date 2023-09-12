@@ -33,28 +33,14 @@
                             <name>${connector.type}-source-${connector.version}</name>
                             <title>${project.name} source</title>
                             <description>Receive data from Azure Blob storage change feed.</description>
-                            <adapter>
-                                <prefix>azure</prefix>
+                            <source>
                                 <name>connector-${connector.type}-source</name>
                                 <version>${connector.kamelets.version}</version>
-                            </adapter>
-                            <kafka>
-                                <prefix>kafka</prefix>
+                            </source>
+                            <sink>
                                 <name>connector-kafka-sink</name>
                                 <version>${connector.kamelets.version}</version>
-                            </kafka>
-                            <dataShape>
-                                <consumes>
-                                    <formats>
-                                        <format>application/json</format>
-                                    </formats>
-                                </consumes>
-                                <produces>
-                                    <formats>
-                                        <format>application/json</format>
-                                    </formats>
-                                </produces>
-                            </dataShape>
+                            </sink>
                         </connector>
                     </connectors>
                 </configuration>

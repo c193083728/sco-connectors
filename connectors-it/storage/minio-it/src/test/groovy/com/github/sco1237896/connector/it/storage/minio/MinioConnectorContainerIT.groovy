@@ -1,15 +1,14 @@
 package com.github.sco1237896.connector.it.storage.minio
 
-import groovy.util.logging.Slf4j
-import com.github.sco1237896.connector.it.support.ConnectorContainer
 import com.github.sco1237896.connector.it.support.SimpleConnectorSpec
+import groovy.util.logging.Slf4j
 
 @Slf4j
 class MinioConnectorContainerIT extends SimpleConnectorSpec {
 
     def "container image exposes health and metrics"(String definition) {
         setup:
-            def cnt = ConnectorContainer.forDefinition(definition).build()
+            def cnt = forDefinition(definition).build()
             cnt.start()
         when:
             def health = cnt.request.get('/q/health')
@@ -28,8 +27,8 @@ class MinioConnectorContainerIT extends SimpleConnectorSpec {
             closeQuietly(cnt)
         where:
             definition << [
-                'minio_sink_v1.json',
-                'minio_source_v1.json'
+                'minio_sink_v1.yaml',
+                'minio_source_v1.yaml'
             ]
     }
 }

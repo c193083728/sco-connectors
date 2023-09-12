@@ -31,7 +31,7 @@ class TelegramConnectorIT extends KafkaConnectorSpec {
     def setupSpec() {
         mock = ContainerImages.container("container.image.wiremock")
         mock.withLogConsumer(logger(HOST))
-        mock.withNetwork(KafkaConnectorSpec.network)
+        mock.withNetwork(network)
         mock.withNetworkAliases(HOST)
         mock.withExposedPorts(PORT)
         mock.waitingFor(Wait.forListeningPort())
@@ -80,19 +80,23 @@ class TelegramConnectorIT extends KafkaConnectorSpec {
             WireMock.configureFor(SCHEME, mock.getHost(), mock.getMappedPort(PORT))
             WireMock.stubFor(req.willReturn(res))
 
-            def cnt = connectorContainer('telegram_source_v1.json', [
-                'kafka_topic' : topic,
-                'kafka_bootstrap_servers': KafkaConnectorSpec.kafka.outsideBootstrapServers,
-                'kafka_consumer_group': UUID.randomUUID().toString(),
-                "telegram_authorization_token": group,
-            ])
+            def cnt = forDefinition('telegram_source_v1.yaml')
+                .withSinkProperties([
+                        'topic': topic,
+                        'bootstrapServers': kafka.outsideBootstrapServers,
+                        'consumerGroup': UUID.randomUUID().toString(),
+                ])
+                .withSourceProperties([
+                        'authorizationToken': group,
+                ])
+                .build()
 
             cnt.withUserProperty("camel.component.telegram.base-uri", "${SCHEME}://${HOST}:${PORT}".toString())
             cnt.withUserProperty('quarkus.log.category."org.apache.camel".level', 'INFO')
         when:
             cnt.start()
         then:
-            def records = KafkaConnectorSpec.kafka.poll(group, topic)
+            def records = kafka.poll(group, topic)
             records.size() == 1
 
             def record = records.first()
@@ -143,20 +147,24 @@ class TelegramConnectorIT extends KafkaConnectorSpec {
             WireMock.configureFor(SCHEME, mock.getHost(), mock.getMappedPort(PORT))
             WireMock.stubFor(request.willReturn(response));
 
-            def cnt = connectorContainer('telegram_sink_v1.json', [
-                    'kafka_topic' : topic,
-                    'kafka_bootstrap_servers': KafkaConnectorSpec.kafka.outsideBootstrapServers,
-                    'kafka_consumer_group': UUID.randomUUID().toString(),
-                    "telegram_authorization_token": group,
-                    "telegram_chat_id": chatId,
-            ])
+            def cnt = forDefinition('telegram_sink_v1.yaml')
+                .withSourceProperties([
+                        'topic': topic,
+                        'bootstrapServers': kafka.outsideBootstrapServers,
+                        'consumerGroup': UUID.randomUUID().toString(),
+                ])
+                .withSinkProperties([
+                        'authorizationToken': group,
+                        'chatId': chatId,
+                ])
+                .build()
 
             cnt.withUserProperty("camel.component.telegram.base-uri", "${SCHEME}://${HOST}:${PORT}".toString())
             cnt.start()
         when:
-        KafkaConnectorSpec.kafka.send(topic, payload)
+            kafka.send(topic, payload)
         then:
-            def records = KafkaConnectorSpec.kafka.poll(group, topic)
+            def records = kafka.poll(group, topic)
             records.size() == 1
             records.first().value() == payload
 

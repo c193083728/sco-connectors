@@ -20,7 +20,7 @@ public final class ConnectorSupport {
     public static Collection<ConnectorDependency> dependencies(
             Log log,
             KameletsCatalog catalog,
-            Connector connector,
+            ConnectorDefinition connector,
             String camelQuarkusVersion) throws MojoExecutionException {
 
         final Set<ConnectorDependency> dependencies = new HashSet<>();
@@ -28,11 +28,11 @@ public final class ConnectorSupport {
         List<ObjectNode> kamelets = new ArrayList<>();
 
         kamelets.add(catalog.kamelet(
-                connector.getAdapter().getName(),
-                connector.getAdapter().getVersion()));
+                connector.getSource().getName(),
+                connector.getSource().getVersion()));
         kamelets.add(catalog.kamelet(
-                connector.getKafka().getName(),
-                connector.getKafka().getVersion()));
+                connector.getSink().getName(),
+                connector.getSink().getVersion()));
 
         for (ObjectNode node : kamelets) {
             log.info("kamelet: " + node.at("/metadata/name").asText());

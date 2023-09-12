@@ -29,48 +29,36 @@
                 <configuration>
                     <connectors>
                         <connector>
+                            <annotations>
+                                <connector.type>source</connector.type>
+                            </annotations>
                             <name>${connector.type}-source-${connector.version}</name>
                             <title>${project.name} source</title>
                             <description>Receive data from an Amazon S3 bucket.</description>
-                            <adapter>
-                                <prefix>aws</prefix>
+                            <source>
                                 <name>connector-${connector.type}-source</name>
                                 <version>${connector.kamelets.version}</version>
-                            </adapter>
-                            <kafka>
-                                <prefix>kafka</prefix>
+                            </source>
+                            <sink>
                                 <name>connector-kafka-sink</name>
                                 <version>${connector.kamelets.version}</version>
-                            </kafka>
-                            <dataShape>
-                                <produces>
-                                    <formats>
-                                        <format>application/octet-stream</format>
-                                    </formats>
-                                </produces>
-                            </dataShape>
+                            </sink>
                         </connector>
                         <connector>
+                            <annotations>
+                                <connector.type>sink</connector.type>
+                            </annotations>
                             <name>${connector.type}-sink-${connector.version}</name>
                             <title>${project.name} sink</title>
                             <description>Send data to an Amazon S3 bucket.</description>
-                            <adapter>
-                                <prefix>aws</prefix>
-                                <name>connector-${connector.type}-sink</name>
-                                <version>${connector.kamelets.version}</version>
-                            </adapter>
-                            <kafka>
-                                <prefix>kafka</prefix>
+                            <source>
                                 <name>connector-kafka-source</name>
                                 <version>${connector.kamelets.version}</version>
-                            </kafka>
-                            <dataShape>
-                                <consumes>
-                                    <formats>
-                                        <format>application/octet-stream</format>
-                                    </formats>
-                                </consumes>
-                            </dataShape>
+                            </source>
+                            <sink>
+                                <name>connector-${connector.type}-sink</name>
+                                <version>${connector.kamelets.version}</version>
+                            </sink>
                         </connector>
                     </connectors>
                 </configuration>

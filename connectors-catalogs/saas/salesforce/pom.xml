@@ -41,23 +41,14 @@
                             <name>${connector.type}-streaming-source-${connector.version}</name>
                             <title>${project.name} Streaming source</title>
                             <description>Receive updates from Salesforce.</description>
-                            <adapter>
-                                <prefix>salesforce</prefix>
+                            <source>
                                 <name>connector-${connector.type}-streaming-source</name>
                                 <version>${connector.kamelets.version}</version>
-                            </adapter>
-                            <kafka>
-                                <prefix>kafka</prefix>
+                            </source>
+                            <sink>
                                 <name>connector-kafka-sink</name>
                                 <version>${connector.kamelets.version}</version>
-                            </kafka>
-                            <dataShape>
-                                <produces>
-                                    <formats>
-                                        <format>application/json</format>
-                                    </formats>
-                                </produces>
-                            </dataShape>
+                            </sink>
                         </connector>
 
                         <!-- Salesforce Create -->
@@ -65,16 +56,14 @@
                             <name>${connector.type}-create-sink-${connector.version}</name>
                             <title>${project.name} Create sink</title>
                             <description>Create an object in Salesforce.</description>
-                            <adapter>
-                                <prefix>salesforce</prefix>
+                            <sink>
                                 <name>connector-${connector.type}-create-sink</name>
                                 <version>${connector.kamelets.version}</version>
-                            </adapter>
-                            <kafka>
-                                <prefix>kafka</prefix>
+                            </sink>
+                            <source>
                                 <name>connector-kafka-source</name>
                                 <version>${connector.kamelets.version}</version>
-                            </kafka>
+                            </source>
                         </connector>
 
                         <!-- Salesforce Delete -->
@@ -82,16 +71,14 @@
                             <name>${connector.type}-delete-sink-${connector.version}</name>
                             <title>${project.name} Delete sink</title>
                             <description>Delete an object in Salesforce.</description>
-                            <adapter>
-                                <prefix>salesforce</prefix>
+                            <sink>
                                 <name>connector-${connector.type}-delete-sink</name>
                                 <version>${connector.kamelets.version}</version>
-                            </adapter>
-                            <kafka>
-                                <prefix>kafka</prefix>
+                            </sink>
+                            <source>
                                 <name>connector-kafka-source</name>
                                 <version>${connector.kamelets.version}</version>
-                            </kafka>
+                            </source>
                         </connector>
 
                         <!-- Salesforce Update -->
@@ -99,16 +86,14 @@
                             <name>${connector.type}-update-sink-${connector.version}</name>
                             <title>${project.name} Update sink</title>
                             <description>Update an object in Salesforce.</description>
-                            <adapter>
-                                <prefix>salesforce</prefix>
+                            <sink>
                                 <name>connector-${connector.type}-update-sink</name>
                                 <version>${connector.kamelets.version}</version>
-                            </adapter>
-                            <kafka>
-                                <prefix>kafka</prefix>
+                            </sink>
+                            <source>
                                 <name>connector-kafka-source</name>
                                 <version>${connector.kamelets.version}</version>
-                            </kafka>
+                            </source>
                         </connector>
 
                     </connectors>
