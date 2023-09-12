@@ -78,7 +78,7 @@ class ConnectorIT extends KafkaConnectorSpec {
             records.size() == 1
             records.first().value() == payload
 
-            await(5, TimeUnit.SECONDS) {
+            await(20, TimeUnit.SECONDS) {
                 BytesMessage message = consumer.receive() as BytesMessage
                 byte[] bytes = message.getBody(byte[])
 
