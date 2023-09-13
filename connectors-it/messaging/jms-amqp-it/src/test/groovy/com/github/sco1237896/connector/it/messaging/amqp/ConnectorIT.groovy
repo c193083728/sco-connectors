@@ -37,7 +37,7 @@ class ConnectorIT extends KafkaConnectorSpec {
         mq.withExposedPorts(61616)
         mq.withEnv('AMQ_USER', 'artemis')
         mq.withEnv('AMQ_PASSWORD', 'simetraehcapa')
-        mq.withEnv('AMQ_EXTRA_ARGS', '--no-autotune --mapped --no-fsync')
+        mq.withEnv('AMQ_EXTRA_ARGS', '--no-autotune')
         mq.waitingFor(waitForConnection())
         mq.start()
 
