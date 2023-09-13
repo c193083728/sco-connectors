@@ -38,6 +38,7 @@ class ConnectorIT extends KafkaConnectorSpec {
         mq.withEnv('AMQ_USER', 'artemis')
         mq.withEnv('AMQ_PASSWORD', 'simetraehcapa')
         mq.withEnv('AMQ_EXTRA_ARGS', '--no-autotune')
+        mq.withEnv("JAVA_ARGS", "-Dbrokerconfig.maxDiskUsage=100")
         mq.waitingFor(waitForConnection())
         mq.start()
 
