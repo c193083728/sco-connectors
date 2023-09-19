@@ -14,7 +14,7 @@
     <packaging>pom</packaging>
 
     <properties>
-        <connector.catalog.group>storage</connector.catalog.group>
+        <quarkus.sco.catalog.group>storage</quarkus.sco.catalog.group>
     </properties>
 
     <modules>

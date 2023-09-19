@@ -18,31 +18,25 @@
     <packaging>jar</packaging>
 
     <properties>
-        <connector.type>aws-lambda</connector.type>
+        <quarkus.sco.connector.type>aws-lambda</quarkus.sco.connector.type>
     </properties>
 
     <build>
         <plugins>
             <plugin>
-                <groupId>com.github.sco1237896</groupId>
-                <artifactId>connectors-maven-plugin</artifactId>
-                <configuration>
-                    <connectors>
-                        <connector>
-                            <name>${connector.type}-sink-${connector.version}</name>
-                            <title>${project.name} sink</title>
-                            <description>Send data to an Amazon Lambda function.</description>
-                            <sink>
-                                <name>connector-${connector.type}-sink</name>
-                                <version>${connector.kamelets.version}</version>
-                            </sink>
-                            <source>
-                                <name>connector-kafka-source</name>
-                                <version>${connector.kamelets.version}</version>
-                            </source>
-                        </connector>
-                    </connectors>
-                </configuration>
+                <groupId>io.quarkus</groupId>
+                <artifactId>quarkus-maven-plugin</artifactId>
+                <version>${quarkus.version}</version>
+                <extensions>true</extensions>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>build</goal>
+                            <goal>generate-code</goal>
+                            <goal>generate-code-tests</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

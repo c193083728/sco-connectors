@@ -4,7 +4,7 @@ import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
 
 public class ConnectorFeature {
-    private static final String FEATURE = "connector";
+    private static final String FEATURE = "sco-connector";
 
     @BuildStep
     FeatureBuildItem feature() {

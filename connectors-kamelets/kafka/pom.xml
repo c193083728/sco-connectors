@@ -22,10 +22,6 @@
             <artifactId>camel-quarkus-kafka</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.github.sco1237896</groupId>
-            <artifactId>connectors-kamelets-serdes</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.apache.camel</groupId>
             <artifactId>camel-health</artifactId>
         </dependency>

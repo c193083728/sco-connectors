@@ -15,12 +15,13 @@
     <name>Misc Connectors</name>
     <description>Misc Connectors</description>
 
+
     <properties>
-        <connector.catalog.group>misc</connector.catalog.group>
+        <quarkus.sco.catalog.group>misc</quarkus.sco.catalog.group>
     </properties>
 
     <modules>
-        <module>data-generator-0.1</module>
+        <module>data-generator</module>
     </modules>
 
 </project>

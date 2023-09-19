@@ -14,7 +14,7 @@
     <packaging>pom</packaging>
 
     <properties>
-        <connector.catalog.group>social</connector.catalog.group>
+        <quarkus.sco.catalog.group>social</quarkus.sco.catalog.group>
     </properties>
     <modules>
         <module>slack-it</module>

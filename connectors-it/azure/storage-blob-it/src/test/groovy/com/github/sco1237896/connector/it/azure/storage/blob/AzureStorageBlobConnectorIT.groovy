@@ -8,6 +8,7 @@ import com.azure.storage.blob.BlobContainerClient
 import com.azure.storage.blob.BlobServiceClientBuilder
 import com.azure.storage.common.StorageSharedKeyCredential
 import com.github.sco1237896.connector.it.support.KafkaContainer
+import groovy.json.JsonSlurper
 import groovy.util.logging.Slf4j
 import com.github.sco1237896.connector.it.support.KafkaConnectorSpec
 import spock.lang.IgnoreIf
@@ -132,6 +133,70 @@ class AzureStorageBlobConnectorIT extends KafkaConnectorSpec {
 
                 return record != null
             }
+        cleanup:
+            if (bc != null) {
+                log.info("Deleting blob ${topic}")
+                bc.deleteIfExists()
+                log.info("Blob ${topic} deleted")
+            }
+
+            closeQuietly(cnt)
+    }
+
+    def "azure-storage-blob-changefeed source"() {
+        setup:
+            def topic = topic()
+            def group = uid()
+            def payload = topic
+
+            def containerName = System.getenv('AZURE_BLOB_CONTAINER_NAME')
+            def accountName = System.getenv('AZURE_BLOB_ACCOUNT_NAME')
+            def accountKey = System.getenv('AZURE_BLOB_ACCESS_KEY')
+            def client = containerClient(accountName, accountKey, containerName)
+            def bc = client.getBlobClient(topic)
+            def start = Instant.now()
+
+            def cnt = forDefinition('azure_storage_blob_changefeed_source_v1.yaml')
+                    .withSinkProperties([
+                            'topic': topic,
+                            'bootstrapServers': kafka.outsideBootstrapServers,
+                            'consumerGroup': uid(),
+                            'user': kafka.username,
+                            'password': kafka.password,
+                            'securityProtocol': KafkaContainer.SECURITY_PROTOCOL,
+                            'saslMechanism': KafkaContainer.SASL_MECHANISM,
+                    ])
+                    .withSourceProperties([
+                            'period': '5000',
+                            'accountName': accountName,
+                            'accessKey': accountKey
+                    ])
+                    .build()
+            cnt.start()
+
+        when:
+            bc.upload(BinaryData.fromString(payload))
+
+        then:
+            //XXX: unfortunately events take a while to be available in the changefeed
+            await(300, TimeUnit.SECONDS) {
+                try {
+                    kafka.poll(group, topic).any {
+                        log.info("RECORD = {} is {}", topic, new JsonSlurper().parseText(it.value()).blobUrl)
+                        return it.value() != null
+                                && it.value().contains(topic)
+                                && Instant.ofEpochMilli(it.timestamp()).isAfter(start)
+                                && !it.headers().headers("azure-storage-blob-changefeed-eventTime").isEmpty()
+                                && !it.headers().headers("azure-storage-blob-changefeed-eventType").isEmpty()
+                                && !it.headers().headers("azure-storage-blob-changefeed-id").isEmpty()
+                                && !it.headers().headers("azure-storage-blob-changefeed-subject").isEmpty()
+                                && !it.headers().headers("azure-storage-blob-changefeed-topic").isEmpty()
+                    }
+                } catch (Exception e ) {
+                    return false
+                }
+            }
+
         cleanup:
             if (bc != null) {
                 log.info("Deleting blob ${topic}")

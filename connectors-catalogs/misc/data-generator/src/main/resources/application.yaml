@@ -1,0 +1,13 @@
+
+
+quarkus:
+  sco:
+    connector:
+      definitions:
+        - name: "${quarkus.sco.connector.type}-source-${quarkus.sco.connector.version}"
+          description: "A data generator (for development and testing purposes)."
+          title: 'Data Generator source'
+          source:
+            name: 'connector-${quarkus.sco.connector.type}-source'
+          sink:
+            name: 'connector-kafka-sink'

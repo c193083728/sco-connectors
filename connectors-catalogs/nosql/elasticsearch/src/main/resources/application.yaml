@@ -1,0 +1,13 @@
+
+
+quarkus:
+  sco:
+    connector:
+      definitions:
+        - name: "${quarkus.sco.connector.type}-index-sink-${quarkus.sco.connector.version}"
+          description: "Send JSON objects to ElasticSearch. Other JSON data types are not supported."
+          title: 'Elasticsearch Index sink'
+          source:
+            name: 'connector-kafka-source'
+          sink:
+            name: 'connector-${quarkus.sco.connector.type}-index-sink'

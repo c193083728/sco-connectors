@@ -16,7 +16,6 @@
     </properties>
 
     <modules>
-        <module>connectors-component-routecontroller</module>
     </modules>
 
 

@@ -1,0 +1,20 @@
+
+
+quarkus:
+  sco:
+    connector:
+      definitions:
+        - name: "${quarkus.sco.connector.type}-source-${quarkus.sco.connector.version}"
+          description: "Retrieve data from an FTPS Server."
+          title: 'SFTP source'
+          source:
+            name: 'connector-${quarkus.sco.connector.type}-source'
+          sink:
+            name: 'connector-kafka-sink'
+        - name: "${quarkus.sco.connector.type}-sink-${quarkus.sco.connector.version}"
+          description: "Send data to an FTPS Server."
+          title: 'SFTP sink'
+          source:
+            name: 'connector-kafka-source'
+          sink:
+            name: 'connector-${quarkus.sco.connector.type}-sink'

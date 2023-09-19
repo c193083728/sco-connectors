@@ -16,7 +16,7 @@
     <properties>
         <container.image.redpanda>docker.io/redpandadata/redpanda:v23.2.8</container.image.redpanda>
         <container.image.wiremock>docker.io/wiremock/wiremock:2.35.0</container.image.wiremock>
-        <container.image.activemq-artemis>quay.io/artemiscloud/activemq-artemis-broker:1.0.14</container.image.activemq-artemis>
+        <container.image.activemq-artemis>quay.io/artemiscloud/activemq-artemis-broker:1.0.22</container.image.activemq-artemis>
         <container.image.cassandra>cassandra:3.11</container.image.cassandra>
         <container.image.mongodb>mongo:5</container.image.mongodb>
         <container.image.mariadb>mariadb:10.6</container.image.mariadb>
@@ -24,10 +24,10 @@
         <container.image.postgres>postgres:14.6</container.image.postgres>
         <container.image.mssql>mcr.microsoft.com/mssql/server:2022-latest</container.image.mssql>
         <container.image.minio>quay.io/minio/minio:latest</container.image.minio>
-        <container.image.localstack>docker.io/localstack/localstack:1.3</container.image.localstack>
+        <container.image.localstack>docker.io/localstack/localstack:2.2</container.image.localstack>
         <container.image.gcrpubsub>gcr.io/google.com/cloudsdktool/cloud-sdk:emulators</container.image.gcrpubsub>
         <container.image.azurite>mcr.microsoft.com/azure-storage/azurite:3.21.0</container.image.azurite>
-        <container.image.elasticsearch>docker.elastic.co/elasticsearch/elasticsearch:7.9.2</container.image.elasticsearch>
+        <container.image.elasticsearch>docker.elastic.co/elasticsearch/elasticsearch:8.10.2</container.image.elasticsearch>
     </properties>
 
     <dependencies>
@@ -76,7 +76,6 @@
         <dependency>
             <groupId>org.freemarker</groupId>
             <artifactId>freemarker</artifactId>
-            <version>2.3.32</version>
         </dependency>
 
         <dependency>
@@ -162,6 +161,11 @@
         <dependency>
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-junit4-mock</artifactId>
         </dependency>
 
     </dependencies>

@@ -15,17 +15,16 @@
     <properties>
         <quarkus.banner.enabled>false</quarkus.banner.enabled>
 
+        <quarkus.bootstrap.workspace-discovery>true</quarkus.bootstrap.workspace-discovery>
 
-        <quarkus.container-image.build>false</quarkus.container-image.build>
-        <quarkus.container-image.push>false</quarkus.container-image.push>
+        <quarkus.sco.catalog.name>connector-catalog-${quarkus.sco.catalog.group}</quarkus.sco.catalog.name>
 
-        <quarkus.jib.base-jvm-image>${connector.container.image.base}</quarkus.jib.base-jvm-image>
+        <quarkus.container-image.registry>${quarkus.sco.container.registry}</quarkus.container-image.registry>
+        <quarkus.container-image.group>${quarkus.sco.container.organization}</quarkus.container-image.group>
+        <quarkus.container-image.tag>${git.branch}-${git.commit.id.abbrev}</quarkus.container-image.tag>
+
+        <quarkus.jib.base-jvm-image>${quarkus.sco.container.image-base}</quarkus.jib.base-jvm-image>
         <quarkus.jib.jvm-arguments>-XX:+UseShenandoahGC,-Djava.util.logging.manager=org.jboss.logmanager.LogManager</quarkus.jib.jvm-arguments>
-
-        <connector.container.image.base>registry.access.redhat.com/ubi8/openjdk-17-runtime:latest</connector.container.image.base>
-        <connectors.catalog.validation.mode>FAIL</connectors.catalog.validation.mode>
-        <connectors.catalog.name>connector-catalog-${connector.catalog.group}</connectors.catalog.name>
-        <connector.allowProcessors>false</connector.allowProcessors>
     </properties>
 
     <dependencies>
@@ -37,6 +36,19 @@
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-logging-json</artifactId>
         </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-config-yaml</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-micrometer</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-micrometer-registry-prometheus</artifactId>
+        </dependency>
+
 
         <dependency>
             <groupId>org.apache.camel.k</groupId>
@@ -52,15 +64,15 @@
         </dependency>
         <dependency>
             <groupId>org.apache.camel.quarkus</groupId>
-            <artifactId>camel-quarkus-kafka</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.camel.quarkus</groupId>
-            <artifactId>camel-quarkus-microprofile-metrics</artifactId>
+            <artifactId>camel-quarkus-micrometer</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.camel.quarkus</groupId>
             <artifactId>camel-quarkus-controlbus</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.camel.quarkus</groupId>
+            <artifactId>camel-quarkus-microprofile-health</artifactId>
         </dependency>
 
         <!-- camel -->
@@ -72,7 +84,6 @@
             <groupId>org.apache.camel.quarkus</groupId>
             <artifactId>camel-quarkus-jq</artifactId>
         </dependency>
-
         <dependency>
             <groupId>org.apache.camel.quarkus</groupId>
             <artifactId>camel-quarkus-log</artifactId>
@@ -85,19 +96,7 @@
         </dependency>
         <dependency>
             <groupId>com.github.sco1237896</groupId>
-            <artifactId>connectors-kamelets-serdes</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.github.sco1237896</groupId>
             <artifactId>connectors-kamelets-kafka</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.github.sco1237896</groupId>
-            <artifactId>connectors-kamelets-actions</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.github.sco1237896</groupId>
-            <artifactId>connectors-component-routecontroller</artifactId>
         </dependency>
     </dependencies>
 
@@ -113,60 +112,6 @@
             </resource>
         </resources>
 
-        <pluginManagement>
-            <plugins>
-                <plugin>
-                    <groupId>com.github.sco1237896</groupId>
-                    <artifactId>connectors-maven-plugin</artifactId>
-                    <executions>
-                        <execution>
-                            <id>generate-pom</id>
-                            <phase>process-resources</phase>
-                            <goals>
-                                <goal>enrich-pom</goal>
-                            </goals>
-                        </execution>
-                        <execution>
-                            <id>generate-catalog</id>
-                            <phase>process-resources</phase>
-                            <goals>
-                                <goal>generate-catalog</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                    <configuration>
-                        <validators>
-                            <validator>${project.basedir}/src/test/resources/validate.groovy</validator>
-                        </validators>
-
-                        <defaults>
-                        </defaults>
-
-                        <defaultAnnotations>
-                            <annotation>
-                                <name>trait.camel.apache.org/deployment.progress-deadline-seconds</name>
-                                <value>${connector.deployment.deadline}</value>
-                            </annotation>
-                            <annotation>
-                                <name>trait.camel.apache.org/container.request-cpu</name>
-                                <value>${connector.request.cpu}</value>
-                            </annotation>
-                            <annotation>
-                                <name>trait.camel.apache.org/container.request-memory</name>
-                                <value>${connector.request.memory}</value>
-                            </annotation>
-                        </defaultAnnotations>
-                    </configuration>
-                    <dependencies>
-                        <dependency>
-                            <groupId>org.assertj</groupId>
-                            <artifactId>assertj-core</artifactId>
-                            <version>${assertj.version}</version>
-                        </dependency>
-                    </dependencies>
-                </plugin>
-            </plugins>
-        </pluginManagement>
         <plugins>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
@@ -218,7 +163,9 @@
                             <rules>
                                 <requireFilesDontExist>
                                     <files>
-                                        <file>${project.basedir}/src</file>
+                                        <file>${project.basedir}/src/main/java</file>
+                                        <file>${project.basedir}/src/main/groovy</file>
+                                        <file>${project.basedir}/src/test</file>
                                     </files>
                                 </requireFilesDontExist>
                             </rules>
@@ -234,7 +181,6 @@
                             <rules>
                                 <bannedDependencies>
                                     <excludes>
-                                        <exclude>org.apache.camel.quarkus:camel-quarkus-microprofile-health</exclude>
                                         <exclude>org.apache.camel.kamelets:camel-kamelets</exclude>
                                         <exclude>org.apache.camel.kamelets:camel-kamelets-utils</exclude>
                                     </excludes>
@@ -295,24 +241,6 @@
             <properties>
                 <quarkus.container-image.build>true</quarkus.container-image.build>
             </properties>
-            <build>
-                <pluginManagement>
-                    <plugins>
-                        <plugin>
-                            <groupId>com.github.sco1237896</groupId>
-                            <artifactId>connectors-maven-plugin</artifactId>
-                            <executions>
-                                <execution>
-                                    <id>app</id>
-                                    <goals>
-                                        <goal>generate-app</goal>
-                                    </goals>
-                                </execution>
-                            </executions>
-                        </plugin>
-                    </plugins>
-                </pluginManagement>
-            </build>
         </profile>
         <profile>
             <id>container-push</id>
@@ -322,24 +250,6 @@
             <properties>
                 <quarkus.container-image.push>true</quarkus.container-image.push>
             </properties>
-            <build>
-                <pluginManagement>
-                    <plugins>
-                        <plugin>
-                            <groupId>com.github.sco1237896</groupId>
-                            <artifactId>connectors-maven-plugin</artifactId>
-                            <executions>
-                                <execution>
-                                    <id>app</id>
-                                    <goals>
-                                        <goal>generate-app</goal>
-                                    </goals>
-                                </execution>
-                            </executions>
-                        </plugin>
-                    </plugins>
-                </pluginManagement>
-            </build>
         </profile>
         <profile>
             <id>fat-jar</id>
@@ -351,24 +261,6 @@
                 <quarkus.package.type>uber-jar</quarkus.package.type>
                 <quarkus.package.output-name>connector</quarkus.package.output-name>
             </properties>
-            <build>
-                <pluginManagement>
-                    <plugins>
-                        <plugin>
-                            <groupId>com.github.sco1237896</groupId>
-                            <artifactId>connectors-component-routecontroller</artifactId>
-                            <executions>
-                                <execution>
-                                    <id>app</id>
-                                    <goals>
-                                        <goal>generate-app</goal>
-                                    </goals>
-                                </execution>
-                            </executions>
-                        </plugin>
-                    </plugins>
-                </pluginManagement>
-            </build>
         </profile>
     </profiles>
 

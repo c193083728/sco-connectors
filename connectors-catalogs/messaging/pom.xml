@@ -16,7 +16,7 @@
     <description>Messaging Connectors</description>
 
     <properties>
-        <connector.catalog.group>messaging</connector.catalog.group>
+        <quarkus.sco.catalog.group>messaging</quarkus.sco.catalog.group>
     </properties>
 
     <modules>

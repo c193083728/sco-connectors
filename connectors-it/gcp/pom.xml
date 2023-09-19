@@ -14,7 +14,7 @@
     <packaging>pom</packaging>
 
     <properties>
-        <connector.catalog.group>gcp</connector.catalog.group>
+        <quarkus.sco.catalog.group>gcp</quarkus.sco.catalog.group>
     </properties>
 
     <modules>

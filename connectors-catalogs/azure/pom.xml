@@ -16,7 +16,7 @@
     <description>Azure Connectors</description>
 
     <properties>
-        <connector.catalog.group>azure</connector.catalog.group>
+        <quarkus.sco.catalog.group>azure</quarkus.sco.catalog.group>
     </properties>
 
     <dependencies>
@@ -28,7 +28,6 @@
 
     <modules>
         <module>azure-storage-blob</module>
-        <module>azure-storage-blob-changefeed</module>
         <module>azure-storage-queue</module>
         <module>azure-eventhubs</module>
         <module>azure-functions</module>

@@ -114,7 +114,7 @@ public class AWSContainer extends GenericContainer<AWSContainer> {
     }
 
     public String getExternalEndpoint() {
-        return "http://" + getContainerIpAddress() + ":" + getMappedPort(PORT);
+        return "http://" + getHost() + ":" + getMappedPort(PORT);
     }
 
     public URI getExternalEndpointURI() {

@@ -1,0 +1,20 @@
+
+
+quarkus:
+  sco:
+    connector:
+      definitions:
+        - name: "${quarkus.sco.connector.type}-source-${quarkus.sco.connector.version}"
+          description: "Receive data from any AMQP 1.0 compliant message broker by using the Apache Qpid JMS client."
+          title: 'JMS AMQP 1.0 source'
+          source:
+            name: 'connector-${quarkus.sco.connector.type}-source'
+          sink:
+            name: 'connector-kafka-sink'
+        - name: "${quarkus.sco.connector.type}-sink-${quarkus.sco.connector.version}"
+          description: "Send data to any AMQP 1.0 compliant message broker by using the Apache Qpid JMS client."
+          title: 'JMS AMQP 1.0 sink'
+          source:
+            name: 'connector-kafka-source'
+          sink:
+            name: 'connector-${quarkus.sco.connector.type}-sink'

@@ -1,8 +1,8 @@
 package com.github.sco1237896.connector.it.azure.storage.blob
 
-import groovy.util.logging.Slf4j
-import com.github.sco1237896.connector.it.support.ConnectorContainer
 import com.github.sco1237896.connector.it.support.SimpleConnectorSpec
+import groovy.util.logging.Slf4j
+import io.restassured.http.ContentType
 
 @Slf4j
 class AzureStorageBlobConnectorContainerIT extends SimpleConnectorSpec {
@@ -13,7 +13,7 @@ class AzureStorageBlobConnectorContainerIT extends SimpleConnectorSpec {
             cnt.start()
         when:
             def health = cnt.request.get('/q/health')
-            def metrics = cnt.request.get("/q/metrics")
+            def metrics = cnt.request.accept(ContentType.TEXT).get("/q/metrics")
         then:
             health.statusCode == 200
             metrics.statusCode == 200
@@ -29,7 +29,8 @@ class AzureStorageBlobConnectorContainerIT extends SimpleConnectorSpec {
         where:
             definition << [
                 'azure_storage_blob_source_v1.yaml',
-                'azure_storage_blob_sink_v1.yaml'
+                'azure_storage_blob_sink_v1.yaml',
+                'azure_storage_blob_changefeed_source_v1.yaml'
             ]
     }
 }

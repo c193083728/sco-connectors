@@ -4,7 +4,7 @@ metadata:
   name: connector-aws-lambda-sink
   annotations:
     camel.apache.org/provider: "Red Hat"
-    camel.apache.org/kamelet.version: "${connector.kamelets.version}"
+    camel.apache.org/kamelet.version: "${quarkus.sco.kamelets.version}"
   labels:
     camel.apache.org/kamelet.type: sink
 spec:

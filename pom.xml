@@ -15,22 +15,22 @@
         <project.reporting.outputEncoding>${resources.encoding}</project.reporting.outputEncoding>
         <project.resources.sourceEncoding>${resources.encoding}</project.resources.sourceEncoding>
 
-        <quarkus.version>2.13.0.Final</quarkus.version>
+        <quarkus.version>3.2.6.Final</quarkus.version>
         <camel-k.version>2.0.1</camel-k.version>
-        <camel-k-runtime.version>1.15.0</camel-k-runtime.version>
-        <camel-quarkus.version>2.13.0</camel-quarkus.version>
-        <camel.version>3.18.2</camel.version>
+        <camel-k-runtime.version>3.2.0</camel-k-runtime.version>
+        <camel-quarkus.version>3.2.0</camel-quarkus.version>
+        <camel.version>4.0.0</camel.version>
 
         <classgraph.version>4.8.157</classgraph.version>
         <jsonschema-generator.version>4.29.0</jsonschema-generator.version>
-        <apicurio.version>2.2.0.Final</apicurio.version>
-        <apicurio-client.version>0.1.7.Final</apicurio-client.version>
+        <apicurio.version>2.4.7.Final</apicurio.version>
+        <apicurio-client.version>0.1.18.Final</apicurio-client.version>
         <json-schema-avro.version>0.1.8</json-schema-avro.version>
         <groovy.version>4.0.11</groovy.version>
         <spock.version>2.3-groovy-4.0</spock.version>
         <auto-service.version>1.0.1</auto-service.version>
-        <logback.version>1.2.11</logback.version>
-        <slf4j.version>1.7.36</slf4j.version>
+        <logback.version>1.4.11</logback.version>
+        <slf4j.version>2.0.9</slf4j.version>
         <awaitility.version>4.2.0</awaitility.version>
         <rest-assured.version>5.3.0</rest-assured.version>
         <json-schema-validator.version>1.0.79</json-schema-validator.version>
@@ -47,19 +47,14 @@
         <redshift-jdbc42.version>2.1.0.9</redshift-jdbc42.version>
         <awssdk-utils.version>2.17.223</awssdk-utils.version>
         <artemis-jms.version>2.23.1</artemis-jms.version>
-        <qpid-jms.version>1.0.0</qpid-jms.version>
+        <qpid-jms.version>2.4.0</qpid-jms.version>
         <mustache.version>0.9.10</mustache.version>
         <azure-storage-blob-changefeed.version>12.0.0-beta.17</azure-storage-blob-changefeed.version>
         <testcontainers.version>1.19.0</testcontainers.version>
         <docker-java.version>3.3.3</docker-java.version>
+        <freemarker.version>2.3.32</freemarker.version>
 
         <pom-tuner.version>4.2.0</pom-tuner.version>
-        <maven.version>3.8.7</maven.version>
-
-        <maven-plugin-tools.version>3.7.1</maven-plugin-tools.version>
-        <maven-shaded.version>3.3.2</maven-shaded.version>
-        <maven-artifact.version>3.8.7</maven-artifact.version>
-        <maven-shared-utils.version>3.3.4</maven-shared-utils.version>
 
         <maven.compiler.target>17</maven.compiler.target>
         <maven.compiler.source>17</maven.compiler.source>
@@ -85,29 +80,26 @@
         <maven-enforcer-plugin-version>3.2.1</maven-enforcer-plugin-version>
 
         <!-- connector -->
-        <connector.operator.type>camel-connector-operator</connector.operator.type>
-        <connector.container.registry>quay.io</connector.container.registry>
-        <connector.container.organization>sco1237896</connector.container.organization>
-        <connector.container.image-prefix>connector</connector.container.image-prefix>
-        <connector.container.tag>${git.branch}-${git.commit.id.abbrev}</connector.container.tag>
+        <quarkus.sco.container.registry>quay.io</quarkus.sco.container.registry>
+        <quarkus.sco.container.organization>sco1237896</quarkus.sco.container.organization>
+        <quarkus.sco.container.tag>${git.branch}-${git.commit.id.abbrev}</quarkus.sco.container.tag>
+        <quarkus.sco.container.image-prefix>connector</quarkus.sco.container.image-prefix>
+        <quarkus.sco.container.image-base>registry.access.redhat.com/ubi8/openjdk-17-runtime:1.17</quarkus.sco.container.image-base>
 
-        <connector.catalog.root>${maven.multiModuleProjectDirectory}/etc/connectors</connector.catalog.root>
-        <connector.catalog.group>all</connector.catalog.group>
+        <quarkus.sco.catalog.root>${maven.multiModuleProjectDirectory}/etc/connectors</quarkus.sco.catalog.root>
+        <quarkus.sco.catalog.group>all</quarkus.sco.catalog.group>
+        <quarkus.sco.catalog.initial-revision>1</quarkus.sco.catalog.initial-revision>
 
-        <connector.version>v1</connector.version>
-        <connector.initial-revision>1</connector.initial-revision>
-        <connector.operator.version>[1.0.0,2.0.0)</connector.operator.version>
-        <connector.kamelets.version>0.0.1</connector.kamelets.version>
+        <quarkus.sco.connector.version>v1</quarkus.sco.connector.version>
+        <quarkus.sco.kamelets.version>0.0.1</quarkus.sco.kamelets.version>
 
         <!-- annotations -->
-        <connector.request.cpu>0.20</connector.request.cpu>
-        <connector.request.memory>128M</connector.request.memory>
-        <connector.deployment.deadline>30</connector.deployment.deadline>
+        <quarkus.sco.connector.deployment.request.cpu>0.20</quarkus.sco.connector.deployment.request.cpu>
+        <quarkus.sco.connector.deployment.request.memory>128M</quarkus.sco.connector.deployment.request.memory>
+        <quarkus.sco.connector.deployment.deadline>30</quarkus.sco.connector.deployment.deadline>
     </properties>
 
     <modules>
-        <!-- tools -->
-        <module>connectors-tools</module>
 
         <!-- core -->
         <module>connectors-components</module>
@@ -161,80 +153,6 @@
                 <scope>import</scope>
             </dependency>
 
-            <!-- maven -->
-            <dependency>
-                <groupId>org.apache.maven</groupId>
-                <artifactId>maven-core</artifactId>
-                <version>${maven.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.maven.plugin-tools</groupId>
-                <artifactId>maven-plugin-annotations</artifactId>
-                <version>${maven-plugin-tools.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.maven.shared</groupId>
-                <artifactId>maven-common-artifact-filters</artifactId>
-                <version>${maven-shaded.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.maven</groupId>
-                <artifactId>maven-plugin-api</artifactId>
-                <version>${maven.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.apache.maven</groupId>
-                <artifactId>maven-embedder</artifactId>
-                <version>${maven.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.maven</groupId>
-                <artifactId>maven-settings</artifactId>
-                <version>${maven.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.maven</groupId>
-                <artifactId>maven-settings-builder</artifactId>
-                <version>${maven.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.maven</groupId>
-                <artifactId>maven-model-builder</artifactId>
-                <version>${maven.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.maven</groupId>
-                <artifactId>maven-builder-support</artifactId>
-                <version>${maven.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.maven</groupId>
-                <artifactId>maven-resolver-provider</artifactId>
-                <version>${maven.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.maven</groupId>
-                <artifactId>maven-repository-metadata</artifactId>
-                <version>${maven.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.maven</groupId>
-                <artifactId>maven-model</artifactId>
-                <version>${maven.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.maven</groupId>
-                <artifactId>maven-artifact</artifactId>
-                <version>${maven-artifact.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.maven.shared</groupId>
-                <artifactId>maven-shared-utils</artifactId>
-                <version>${maven-shared-utils.version}</version>
-            </dependency>
-
-
 
             <!-- local -->
             <dependency>
@@ -246,11 +164,6 @@
                 <groupId>com.github.sco1237896</groupId>
                 <artifactId>connectors-core-deployment</artifactId>
                 <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.github.sco1237896</groupId>
-                <artifactId>connectors-component-routecontroller</artifactId>
-                <version>0.0.1-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>com.github.sco1237896</groupId>
@@ -442,70 +355,8 @@
                 <artifactId>connectors-catalog-it-support</artifactId>
                 <version>${project.version}</version>
             </dependency>
-            <dependency>
-                <groupId>com.github.sco1237896</groupId>
-                <artifactId>connectors-maven-plugin</artifactId>
-                <version>0.0.1-SNAPSHOT</version>
-            </dependency>
 
             <!-- deps -->
-            <dependency>
-                <groupId>com.networknt</groupId>
-                <artifactId>json-schema-validator</artifactId>
-                <version>${json-schema-validator.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.github.victools</groupId>
-                <artifactId>jsonschema-generator</artifactId>
-                <version>${jsonschema-generator.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.github.victools</groupId>
-                <artifactId>jsonschema-module-jackson</artifactId>
-                <version>${jsonschema-generator.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.apicurio</groupId>
-                <artifactId>apicurio-registry-serdes-avro-serde</artifactId>
-                <version>${apicurio.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.apicurio</groupId>
-                <artifactId>apicurio-registry-serdes-jsonschema-serde</artifactId>
-                <version>${apicurio.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.apicurio</groupId>
-                <artifactId>apicurio-registry-serdes-protobuf-serde</artifactId>
-                <version>${apicurio.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.apicurio</groupId>
-                <artifactId>apicurio-common-rest-client-common</artifactId>
-                <version>${apicurio-client.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.apicurio</groupId>
-                <artifactId>apicurio-registry-schema-util-json</artifactId>
-                <version>${apicurio.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.github.erosb</groupId>
-                <artifactId>everit-json-schema</artifactId>
-                <version>${everit-json-schema.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.github.java-json-tools</groupId>
-                <artifactId>json-schema-avro</artifactId>
-                <version>${json-schema-avro.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.github.classgraph</groupId>
-                <artifactId>classgraph</artifactId>
-                <version>${classgraph.version}</version>
-            </dependency>
             <dependency>
                 <groupId>com.google.auto.service</groupId>
                 <artifactId>auto-service</artifactId>
@@ -594,11 +445,6 @@
             </dependency>
 
             <dependency>
-                <groupId>io.strimzi</groupId>
-                <artifactId>strimzi-test-container</artifactId>
-                <version>${strimzi-test-container.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>org.assertj</groupId>
                 <artifactId>assertj-core</artifactId>
                 <version>${assertj-core.version}</version>
@@ -663,6 +509,12 @@
                 </exclusions>
             </dependency>
 
+            <dependency>
+                <groupId>org.freemarker</groupId>
+                <artifactId>freemarker</artifactId>
+                <version>${freemarker.version}</version>
+            </dependency>
+
         </dependencies>
     </dependencyManagement>
 
@@ -704,13 +556,6 @@
         </resources>
         <pluginManagement>
             <plugins>
-                <!-- local -->
-                <plugin>
-                    <groupId>com.github.sco1237896</groupId>
-                    <artifactId>connectors-maven-plugin</artifactId>
-                    <version>${project.version}</version>
-                </plugin>
-
                 <!-- others -->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -760,6 +605,9 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-resources-plugin</artifactId>
                     <version>${maven-resources-plugin.version}</version>
+                    <configuration>
+                        <propertiesEncoding>${project.build.sourceEncoding}</propertiesEncoding>
+                    </configuration>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.camel</groupId>
@@ -872,17 +720,6 @@
                     <groups>java.,javax.,org.,com.</groups>
                     <staticGroups>*</staticGroups>
                     <removeUnused>true</removeUnused>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-clean-plugin</artifactId>
-                <configuration>
-                    <filesets>
-                        <fileset>
-                            <directory>etc/kubernetes/manifests/base/connectors</directory>
-                        </fileset>
-                    </filesets>
                 </configuration>
             </plugin>
         </plugins>

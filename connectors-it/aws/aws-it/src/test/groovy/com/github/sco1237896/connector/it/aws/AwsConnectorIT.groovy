@@ -1,9 +1,9 @@
 package com.github.sco1237896.connector.it.aws
 
+import com.github.sco1237896.connector.it.support.KafkaConnectorSpec
 import com.github.sco1237896.connector.it.support.KafkaContainer
 import groovy.json.JsonSlurper
 import groovy.util.logging.Slf4j
-import com.github.sco1237896.connector.it.support.KafkaConnectorSpec
 import software.amazon.awssdk.core.SdkBytes
 import software.amazon.awssdk.core.sync.RequestBody
 import software.amazon.awssdk.services.cloudwatch.model.Metric
@@ -16,7 +16,10 @@ import software.amazon.awssdk.services.dynamodb.model.KeyType
 import software.amazon.awssdk.services.dynamodb.model.ProvisionedThroughput
 import software.amazon.awssdk.services.dynamodb.model.ScalarAttributeType
 import software.amazon.awssdk.services.kinesis.model.Record
+import software.amazon.awssdk.services.sqs.model.GetQueueUrlRequest
+import software.amazon.awssdk.services.sqs.model.QueueAttributeName
 import software.amazon.awssdk.utils.IoUtils
+import spock.lang.Ignore
 
 import java.nio.charset.Charset
 import java.time.Instant
@@ -133,9 +136,9 @@ class AwsConnectorIT extends KafkaConnectorSpec {
                 ])
                 .build()
 
-
             cnt.withEnv("camel.component.aws2-s3.uriEndpointOverride", aws.endpoint)
             cnt.withEnv("camel.component.aws2-s3.overrideEndpoint", "true")
+            cnt.withEnv("camel.component.aws2-s3.forcePathStyle", "true")
             cnt.start()
 
             def s3 = aws.s3()
@@ -180,6 +183,7 @@ class AwsConnectorIT extends KafkaConnectorSpec {
 
             cnt.withEnv("camel.component.aws2-s3.uriEndpointOverride", aws.endpoint)
             cnt.withEnv("camel.component.aws2-s3.overrideEndpoint", "true")
+            cnt.withEnv("camel.component.aws2-s3.forcePathStyle", "true")
             cnt.start()
         when:
             aws.s3().putObject(
@@ -208,11 +212,18 @@ class AwsConnectorIT extends KafkaConnectorSpec {
             def payload = '''{ "username":"oscerd", "city":"Rome" }'''
             def topic = topic()
             def sqs = aws.sqs()
-            def queueUrl = sqs.createQueue(b -> b.queueName(topic)).queueUrl().replace(AWSContainer.CONTAINER_ALIAS, 'localhost')
+
+            def queue = sqs.createQueue(
+                    b -> b.queueName(topic))
+            def queueArn = sqs.getQueueAttributes(
+                    b -> b.attributeNames(QueueAttributeName.QUEUE_ARN).queueUrl(queue.queueUrl()))
+                    .attributes()
+                    .get(QueueAttributeName.QUEUE_ARN)
 
             def sns = aws.sns()
             def topicArn = sns.createTopic(b -> b.name(topic)).topicArn()
-            sns.subscribe(b -> b.topicArn(topicArn).protocol("sqs").endpoint(queueUrl).returnSubscriptionArn(true).build())
+
+            sns.subscribe(b -> b.topicArn(topicArn).protocol("sqs").endpoint(queueArn).returnSubscriptionArn(true).build())
 
 
             def cnt = forDefinition('aws_sns_sink_v1.yaml')
@@ -229,7 +240,7 @@ class AwsConnectorIT extends KafkaConnectorSpec {
                         'accessKey': aws.credentials.accessKeyId(),
                         'secretKey': aws.credentials.secretAccessKey(),
                         'region': aws.region,
-                        'topicNameOrArn': topic,
+                        'topicNameOrArn': topicArn,
                         'autoCreateTopic': 'true'
                 ])
                 .build()
@@ -241,7 +252,7 @@ class AwsConnectorIT extends KafkaConnectorSpec {
             kafka.send(topic, payload, ['foo': 'bar'])
         then:
             await(10, TimeUnit.SECONDS) {
-                def msg = sqs.receiveMessage(b -> b.queueUrl(queueUrl))
+                def msg = sqs.receiveMessage(b -> b.queueUrl(queue.queueUrl()))
 
                 if (!msg.hasMessages()) {
                     return false
@@ -259,7 +270,6 @@ class AwsConnectorIT extends KafkaConnectorSpec {
     // SQS
     //
     // ********************************************
-
 
     def "sqs sink"() {
         setup:
@@ -349,8 +359,6 @@ class AwsConnectorIT extends KafkaConnectorSpec {
         cleanup:
             closeQuietly(cnt)
     }
-
-
 
     // ********************************************
     //

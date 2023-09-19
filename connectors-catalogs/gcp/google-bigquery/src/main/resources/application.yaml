@@ -1,0 +1,13 @@
+
+
+quarkus:
+  sco:
+    connector:
+      definitions:
+        - name: "${quarkus.sco.connector.type}-sink-${quarkus.sco.connector.version}"
+          description: "Send data to a Google Big Query table."
+          title: 'Google BigQuery sink'
+          source:
+            name: 'connector-kafka-source'
+          sink:
+            name: 'connector-${quarkus.sco.connector.type}-sink'

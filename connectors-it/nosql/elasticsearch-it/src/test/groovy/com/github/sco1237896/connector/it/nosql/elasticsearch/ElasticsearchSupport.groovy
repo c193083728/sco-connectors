@@ -1,52 +1,32 @@
 package com.github.sco1237896.connector.it.nosql.elasticsearch
 
+import com.github.sco1237896.connector.it.support.ConnectorSpecSupport
+import com.github.sco1237896.connector.it.support.ContainerImages
 import org.apache.http.HttpHost
 import org.apache.http.auth.AuthScope
 import org.apache.http.auth.UsernamePasswordCredentials
 import org.apache.http.impl.client.BasicCredentialsProvider
-import com.github.sco1237896.connector.it.support.AwaitStrategy
-import com.github.sco1237896.connector.it.support.ConnectorSpecSupport
-import com.github.sco1237896.connector.it.support.ContainerImages
-import org.elasticsearch.client.Request
 import org.elasticsearch.client.RestClient
-import org.testcontainers.containers.ContainerState
 import org.testcontainers.containers.Network
-import org.testcontainers.containers.wait.strategy.WaitStrategy
 import org.testcontainers.elasticsearch.ElasticsearchContainer
 
 class ElasticsearchSupport {
     static final int ELASTIC_PORT = 9200
 
-    static RestClient client(ContainerState container, String user, String password) {
-        def host = HttpHost.create(container.host + ':' + container.getMappedPort(ELASTIC_PORT))
+    static RestClient client(ElasticsearchContainer container, String user, String password) {
+        def host = new HttpHost(container.host, container.getMappedPort(ELASTIC_PORT), "https")
         def builder = RestClient.builder(host)
 
         if (user != null && password != null) {
-            def cp = new BasicCredentialsProvider();
+            def cp = new BasicCredentialsProvider()
             cp.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(user, password))
 
             builder.setHttpClientConfigCallback(hcb -> {
-                return hcb.setDefaultCredentialsProvider(cp)
+                return hcb.setDefaultCredentialsProvider(cp).setSSLContext(container.createSslContextFromCa())
             })
         }
 
         return builder.build()
-    }
-
-    static WaitStrategy waitForConnection(String user, String password) {
-        def hc = new Request("GET", "/_cluster/health")
-
-        return new AwaitStrategy() {
-            @Override
-            boolean ready() {
-                try (RestClient c = client(target, user, password)) {
-                    def r = c.performRequest(hc)
-                    return r.statusLine.statusCode >= 200 && r.statusLine.statusCode < 300
-                } catch (Exception e) {
-                    return false
-                }
-            }
-        }
     }
 
     static ElasticsearchContainer elasticsearchContainer(Network network, String alias, String user, String password) {
@@ -55,7 +35,6 @@ class ElasticsearchSupport {
         elastic.withNetwork(network)
         elastic.withNetworkAliases(alias)
         elastic.withExposedPorts(ElasticsearchSupport.ELASTIC_PORT)
-        elastic.waitingFor(waitForConnection(user, password))
 
         if (user != null && password != null) {
             elastic.withPassword(password)

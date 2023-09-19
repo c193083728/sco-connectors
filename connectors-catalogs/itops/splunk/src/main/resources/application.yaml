@@ -1,0 +1,13 @@
+
+
+quarkus:
+  sco:
+    connector:
+      definitions:
+        - name: "${quarkus.sco.connector.type}-sink-${quarkus.sco.connector.version}"
+          description: "end data to Splunk."
+          title: 'MongoDB sink'
+          source:
+            name: 'connector-kafka-source'
+          sink:
+            name: 'connector-splunk-sink'

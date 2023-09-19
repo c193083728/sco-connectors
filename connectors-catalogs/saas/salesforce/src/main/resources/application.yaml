@@ -1,0 +1,34 @@
+
+
+quarkus:
+  sco:
+    connector:
+      definitions:
+        - name: "${quarkus.sco.connector.type}-streaming-source-${quarkus.sco.connector.version}"
+          description: "Receive updates from Salesforce."
+          title: 'Salesforce Streaming source'
+          source:
+            name: 'connector-${quarkus.sco.connector.type}-streaming-source'
+          sink:
+            name: 'connector-kafka-sink'
+        - name: "${quarkus.sco.connector.type}-create-sink-${quarkus.sco.connector.version}"
+          description: "Create an object in Salesforce."
+          title: 'Salesforce Create sink'
+          source:
+            name: 'connector-kafka-source'
+          sink:
+            name: 'connector-${quarkus.sco.connector.type}-create-sink'
+        - name: "${quarkus.sco.connector.type}-delete-sink-${quarkus.sco.connector.version}"
+          description: "Delete an object in Salesforce."
+          title: 'Salesforce Delete sink'
+          source:
+            name: 'connector-kafka-source'
+          sink:
+            name: 'connector-${quarkus.sco.connector.type}-delete-sink'
+        - name: "${quarkus.sco.connector.type}-update-sink-${quarkus.sco.connector.version}"
+          description: "Update an object in Salesforce."
+          title: 'Salesforce Update sink'
+          source:
+            name: 'connector-kafka-source'
+          sink:
+            name: 'connector-${quarkus.sco.connector.type}-update-sink'

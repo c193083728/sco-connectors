@@ -1,0 +1,20 @@
+
+
+quarkus:
+  sco:
+    connector:
+      definitions:
+        - name: "${quarkus.sco.connector.type}-stream-source-${quarkus.sco.connector.version}"
+          description: "Receive data from Amazon DynamoDB Streams."
+          title: 'Amazon DynamoDB Stream source'
+          source:
+            name: 'connector-${quarkus.sco.connector.type}-streams-source'
+          sink:
+            name: 'connector-kafka-sink'
+        - name: "${quarkus.sco.connector.type}-sink-${quarkus.sco.connector.version}"
+          description: "Send data to Amazon DynamoDB NoSQL database service. The sent data inserts, updates, or deletes an item in the specified Amazon DynamoDB table."
+          title: 'Amazon DynamoDB  sink'
+          source:
+            name: 'connector-kafka-source'
+          sink:
+            name: 'connector-${quarkus.sco.connector.type}-sink'

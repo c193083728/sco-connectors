@@ -4,7 +4,7 @@ metadata:
   name: connector-kafka-sink
   annotations:
     camel.apache.org/provider: "Red Hat"
-    camel.apache.org/kamelet.version: "${connector.kamelets.version}"
+    camel.apache.org/kamelet.version: "${quarkus.sco.kamelets.version}"
   labels:
     camel.apache.org/kamelet.type: "sink"
 spec:
@@ -20,12 +20,39 @@ spec:
       - `partition-key`: as message partition key
     required:
       - topic
+      - bootstrapServers
     type: object
     properties:
       topic:
         title: Topic Name
         description: The name of the Kafka Topic to use.
         type: string
+      bootstrapServers:
+        title: Bootstrap Servers
+        description: Comma separated list of Kafka Broker URLs
+        type: string
+      securityProtocol:
+        title: Security Protocol
+        description: Protocol used to communicate with brokers. SASL_PLAINTEXT, PLAINTEXT, SASL_SSL and SSL are supported
+        type: string
+      saslMechanism:
+        title: SASL Mechanism
+        description: The Simple Authentication and Security Layer (SASL) Mechanism used.
+        type: string
+      user:
+        title: Username
+        description: Username to authenticate to Kafka
+        type: string
+        x-descriptors:
+          - urn:camel:group:credentials
+      password:
+        title: Password
+        description: Password to authenticate to kafka
+        type: string
+        format: password
+        x-descriptors:
+          - urn:alm:descriptor:com.tectonic.ui:password
+          - urn:camel:group:credentials
   dependencies:
     - "camel:kafka"
     - "camel:kamelet"
@@ -34,7 +61,6 @@ spec:
       - name: "kafka-client-factory"
         type: "#class:com.github.sco1237896.connector.kamelet.kafka.ClientFactory"
         properties:
-          registryUrl: '{{registryUrl:}}'
           bootstrapUrl: "{{bootstrapServers}}"
           username: '{{user}}'
           password: '{{password}}'
@@ -42,7 +68,7 @@ spec:
           securityProtocol: "{{securityProtocol:}}"
           saslMechanism: "{{saslMechanism:}}"
       - name: "kafka-header-serializer"
-        type: "#class:com.github.sco1237896.connector.kamelet.kafka.DefaultKafkaHeaderSerializer"
+        type: "#class:org.apache.camel.component.kafka.serde.DefaultKafkaHeaderSerializer"
     from:
       uri: "kamelet:source"
       steps:
@@ -67,6 +93,6 @@ spec:
           uri: "kafka:{{topic}}"
           parameters:
             keySerializer: "{{keySerializer:org.apache.kafka.common.serialization.ByteArraySerializer}}"
-            valueSerializer: "{{valueSerializer:com.github.sco1237896.connector.kamelet.serdes.bytes.ByteArraySerializer}}"
+            valueSerializer: "{{valueSerializer:org.apache.kafka.common.serialization.ByteArraySerializer}}"
             kafkaClientFactory: "#{{kafka-client-factory}}"
             headerSerializer: "#{{kafka-header-serializer}}"

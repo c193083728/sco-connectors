@@ -15,8 +15,7 @@
 
     <logger name="tc-container" level="INFO"/>
     <logger name="tc-kafka" level="WARN"/>
-    <logger name="tc-elastic" level="WARN"/>
-    <logger name="tc-elastic-secured" level="WARN"/>
+    <logger name="tc-elastic" level="INFO"/>
 
     <root level="INFO">
         <appender-ref ref="STDOUT"/>

@@ -18,7 +18,7 @@
     <packaging>jar</packaging>
 
     <properties>
-        <connector.type>jira</connector.type>
+        <quarkus.sco.connector.type>jira</quarkus.sco.connector.type>
     </properties>
 
     <dependencies>
@@ -31,51 +31,19 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>com.github.sco1237896</groupId>
-                <artifactId>connectors-maven-plugin</artifactId>
-                <configuration>
-                    <connectors>
-                        <connector>
-                            <name>${connector.type}-source-${connector.version}</name>
-                            <title>${project.name} source</title>
-                            <description>Receive notifications about new issues from Jira.</description>
-                            <source>
-                                <name>connector-${connector.type}-source</name>
-                                <version>${connector.kamelets.version}</version>
-                            </source>
-                            <sink>
-                                <name>connector-kafka-sink</name>
-                                <version>${connector.kamelets.version}</version>
-                            </sink>
-                        </connector>
-                        <connector>
-                            <name>${connector.type}-add-comment-sink-${connector.version}</name>
-                            <title>${project.name} Add Comment sink</title>
-                            <description>Add a new comment to an existing issue in Jira.</description>
-                            <sink>
-                                <name>connector-${connector.type}-add-comment-sink</name>
-                                <version>${connector.kamelets.version}</version>
-                            </sink>
-                            <source>
-                                <name>connector-kafka-source</name>
-                                <version>${connector.kamelets.version}</version>
-                            </source>
-                        </connector>
-                        <connector>
-                            <name>${connector.type}-add-issue-sink-${connector.version}</name>
-                            <title>${project.name} Add Issue sink</title>
-                            <description>Add a new issue to Jira.</description>
-                            <sink>
-                                <name>connector-${connector.type}-add-issue-sink</name>
-                                <version>${connector.kamelets.version}</version>
-                            </sink>
-                            <source>
-                                <name>connector-kafka-source</name>
-                                <version>${connector.kamelets.version}</version>
-                            </source>
-                        </connector>
-                    </connectors>
-                </configuration>
+                <groupId>io.quarkus</groupId>
+                <artifactId>quarkus-maven-plugin</artifactId>
+                <version>${quarkus.version}</version>
+                <extensions>true</extensions>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>build</goal>
+                            <goal>generate-code</goal>
+                            <goal>generate-code-tests</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

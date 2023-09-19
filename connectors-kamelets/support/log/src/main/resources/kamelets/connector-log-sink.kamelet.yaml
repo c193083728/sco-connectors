@@ -5,7 +5,7 @@ metadata:
   annotations:
     camel.apache.org/provider: "Red Hat"
     camel.apache.org/kamelet.group: "Misc"
-    camel.apache.org/kamelet.version: "${connector.kamelets.version}"
+    camel.apache.org/kamelet.version: "${quarkus.sco.kamelets.version}"
   labels:
     camel.apache.org/kamelet.type: "sink"
 spec:

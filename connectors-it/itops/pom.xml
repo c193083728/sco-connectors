@@ -14,7 +14,7 @@
     <packaging>pom</packaging>
 
     <properties>
-        <connector.catalog.group>itops</connector.catalog.group>
+        <quarkus.sco.catalog.group>itops</quarkus.sco.catalog.group>
     </properties>
 
 </project>

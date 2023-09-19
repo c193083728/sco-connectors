@@ -14,13 +14,12 @@
     <packaging>pom</packaging>
 
     <properties>
-        <connector.catalog.group>azure</connector.catalog.group>
+        <quarkus.sco.catalog.group>azure</quarkus.sco.catalog.group>
     </properties>
 
     <modules>
         <module>eventhubs-it</module>
         <module>storage-blob-it</module>
-        <module>storage-blob-changefeed-it</module>
     </modules>
 
 </project>

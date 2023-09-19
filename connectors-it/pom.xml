@@ -134,7 +134,7 @@
                                 </includes>
                                 <classesDirectory>${project.build.outputDirectory}</classesDirectory>
                                 <systemPropertyVariables>
-                                    <connectors.catalog.definition.root>${connector.catalog.root}/connector-catalog-${connector.catalog.group}</connectors.catalog.definition.root>
+                                    <connectors.catalog.definition.root>${quarkus.sco.catalog.root}/connector-catalog-${quarkus.sco.catalog.group}</connectors.catalog.definition.root>
                                 </systemPropertyVariables>
                             </configuration>
                         </plugin>

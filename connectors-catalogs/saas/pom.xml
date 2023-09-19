@@ -16,7 +16,7 @@
     <description>SaaS Connectors</description>
 
     <properties>
-        <connector.catalog.group>saas</connector.catalog.group>
+        <quarkus.sco.catalog.group>saas</quarkus.sco.catalog.group>
     </properties>
 
     <modules>

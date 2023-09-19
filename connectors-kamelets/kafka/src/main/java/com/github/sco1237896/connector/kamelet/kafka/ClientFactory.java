@@ -1,7 +1,5 @@
 package com.github.sco1237896.connector.kamelet.kafka;
 
-import java.util.Properties;
-
 import org.apache.camel.component.kafka.DefaultKafkaClientFactory;
 import org.apache.camel.component.kafka.KafkaConfiguration;
 import org.apache.camel.util.ObjectHelper;
@@ -14,14 +12,13 @@ import org.apache.kafka.common.config.SaslConfigs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.apicurio.registry.serde.SerdeConfig;
+import java.util.Properties;
 
 @SuppressWarnings("unused")
 public class ClientFactory extends DefaultKafkaClientFactory {
     private static final Logger LOG = LoggerFactory.getLogger(ClientFactory.class);
 
     private String bootstrapUrl;
-    private String registryUrl;
     private String username;
     private String password;
     private String securityProtocol;
@@ -37,15 +34,6 @@ public class ClientFactory extends DefaultKafkaClientFactory {
 
     public void setBootstrapUrl(String bootstrapUrl) {
         this.bootstrapUrl = bootstrapUrl;
-    }
-
-    @SuppressWarnings("unused")
-    public String getRegistryUrl() {
-        return registryUrl;
-    }
-
-    public void setRegistryUrl(String registryUrl) {
-        this.registryUrl = registryUrl;
     }
 
     @SuppressWarnings("unused")
@@ -138,21 +126,6 @@ public class ClientFactory extends DefaultKafkaClientFactory {
     }
 
     private void enrich(Properties props) {
-        //
-        // Configure Apicurio registry
-        //
-        if (ObjectHelper.isNotEmpty(registryUrl)) {
-            props.put(SerdeConfig.REGISTRY_URL, registryUrl);
-            props.put(SerdeConfig.AUTO_REGISTER_ARTIFACT, Boolean.TRUE);
-
-            if (ObjectHelper.isNotEmpty(username)) {
-                props.put(SerdeConfig.AUTH_USERNAME, username);
-            }
-            if (ObjectHelper.isNotEmpty(password)) {
-                props.put(SerdeConfig.AUTH_PASSWORD, password);
-            }
-        }
-
         //
         // Configure Authentication
         //

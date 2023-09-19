@@ -1,8 +1,9 @@
 package com.github.sco1237896.connector.it.nosql.elasticsearch
 
-import groovy.util.logging.Slf4j
 import com.github.sco1237896.connector.it.support.ConnectorContainer
 import com.github.sco1237896.connector.it.support.SimpleConnectorSpec
+import groovy.util.logging.Slf4j
+import io.restassured.http.ContentType
 
 @Slf4j
 class ElasticsearchConnectorContainerIT extends SimpleConnectorSpec {
@@ -13,7 +14,7 @@ class ElasticsearchConnectorContainerIT extends SimpleConnectorSpec {
             cnt.start()
         when:
             def health = cnt.request.get('/q/health')
-            def metrics = cnt.request.get("/q/metrics")
+            def metrics = cnt.request.accept(ContentType.TEXT).get("/q/metrics")
         then:
             health.statusCode == 200
             metrics.statusCode == 200
@@ -28,7 +29,7 @@ class ElasticsearchConnectorContainerIT extends SimpleConnectorSpec {
             closeQuietly(cnt)
         where:
             definition << [
-                'elasticsearch_sink_v1.yaml',
+                'elasticsearch_index_sink_v1.yaml',
             ]
     }
 }

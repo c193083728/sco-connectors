@@ -61,7 +61,6 @@ jobs:
           cd ${{ env.PROJECTS }}/sco-connector
           
           ./mvnw ${MAVEN_ARGS} clean install -U \
-            -Pcontainer-build \
             -Pcontainer-test \
             -Dconnector.catalog.root=${{ env.PROJECTS }}/sco-manifests/connectors \
             -Dconnector.container.tag=${CONNECTORS_RELEASE} \

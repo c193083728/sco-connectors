@@ -3,6 +3,7 @@ package com.github.sco1237896.connector.it.sql.mariadb
 import groovy.util.logging.Slf4j
 import com.github.sco1237896.connector.it.support.ConnectorContainer
 import com.github.sco1237896.connector.it.support.SimpleConnectorSpec
+import io.restassured.http.ContentType
 import spock.lang.Unroll
 
 @Slf4j
@@ -15,7 +16,7 @@ class MariaDbConnectorContainerIT extends SimpleConnectorSpec {
             cnt.start()
         when:
             def health = cnt.request.get('/q/health')
-            def metrics = cnt.request.get("/q/metrics")
+            def metrics = cnt.request.accept(ContentType.TEXT).get("/q/metrics")
         then:
             health.statusCode == 200
             metrics.statusCode == 200

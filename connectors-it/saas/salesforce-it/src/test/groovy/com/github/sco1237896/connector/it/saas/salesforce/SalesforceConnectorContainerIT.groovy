@@ -3,6 +3,7 @@ package com.github.sco1237896.connector.it.saas.salesforce
 import groovy.util.logging.Slf4j
 import com.github.sco1237896.connector.it.support.ConnectorContainer
 import com.github.sco1237896.connector.it.support.SimpleConnectorSpec
+import io.restassured.http.ContentType
 
 @Slf4j
 class SalesforceConnectorContainerIT extends SimpleConnectorSpec {
@@ -13,7 +14,7 @@ class SalesforceConnectorContainerIT extends SimpleConnectorSpec {
         cnt.start()
         when:
         def health = cnt.request.get('/q/health')
-        def metrics = cnt.request.get("/q/metrics")
+        def metrics = cnt.request.accept(ContentType.TEXT).get("/q/metrics")
         then:
         health.statusCode == 200
         metrics.statusCode == 200

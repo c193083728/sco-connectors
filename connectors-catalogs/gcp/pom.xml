@@ -16,7 +16,7 @@
     <description>GCP Connectors</description>
 
     <properties>
-        <connector.catalog.group>gcp</connector.catalog.group>
+        <quarkus.sco.catalog.group>gcp</quarkus.sco.catalog.group>
     </properties>
 
     <dependencies>
@@ -25,17 +25,6 @@
             <artifactId>connectors-kamelets-gcp</artifactId>
         </dependency>
     </dependencies>
-
-    <build>
-        <pluginManagement>
-            <plugins>
-                <plugin>
-                    <groupId>com.github.sco1237896</groupId>
-                    <artifactId>connectors-component-routecontroller</artifactId>
-                </plugin>
-            </plugins>
-        </pluginManagement>
-    </build>
 
     <modules>
         <module>google-functions</module>

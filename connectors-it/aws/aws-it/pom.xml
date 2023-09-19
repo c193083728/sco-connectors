@@ -141,18 +141,6 @@
         </dependency>
         <dependency>
             <groupId>com.github.sco1237896</groupId>
-            <artifactId>connector-aws-dynamodb-streams</artifactId>
-            <version>${project.version}</version>
-            <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>com.github.sco1237896</groupId>
             <artifactId>connector-aws-lambda</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>

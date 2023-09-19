@@ -1,0 +1,20 @@
+
+
+quarkus:
+  sco:
+    connector:
+      definitions:
+        - name: "${quarkus.sco.connector.type}-source-${quarkus.sco.connector.version}"
+          description: "Receive data from Amazon Simple Queue Service (SQS)."
+          title: 'Amazon Simple Queue Service source'
+          source:
+            name: 'connector-${quarkus.sco.connector.type}-source'
+          sink:
+            name: 'connector-kafka-sink'
+        - name: "${quarkus.sco.connector.type}-sink-${quarkus.sco.connector.version}"
+          description: "Send data to Amazon Simple Queue Service (SQS)."
+          title: 'Amazon Simple Queue Service sink'
+          source:
+            name: 'connector-kafka-source'
+          sink:
+            name: 'connector-${quarkus.sco.connector.type}-sink'

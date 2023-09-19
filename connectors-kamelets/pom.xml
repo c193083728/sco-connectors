@@ -16,8 +16,6 @@
     </properties>
 
     <modules>
-        <module>actions</module>
-        <module>serdes</module>
         <module>kafka</module>
         <module>support</module>
         <module>aws</module>

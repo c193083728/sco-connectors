@@ -2,9 +2,9 @@ package com.github.sco1237896.connector.it.support
 
 import groovy.json.JsonBuilder
 import groovy.util.logging.Slf4j
+import org.assertj.core.api.SoftAssertionsProvider
 import org.awaitility.Awaitility
 import org.bson.types.ObjectId
-import org.junit.function.ThrowingRunnable
 import org.slf4j.LoggerFactory
 import org.testcontainers.containers.output.Slf4jLogConsumer
 import spock.lang.Specification
@@ -36,14 +36,14 @@ abstract class ConnectorSpecSupport extends Specification {
                 .until(() -> condition())
     }
 
-    static void untilAsserted(long timeout, TimeUnit unit, ThrowingRunnable condition) {
+    static void untilAsserted(long timeout, TimeUnit unit, SoftAssertionsProvider.ThrowingRunnable condition) {
         Awaitility.await()
                 .atMost(timeout, unit)
                 .pollDelay(250, TimeUnit.MILLISECONDS)
                 .untilAsserted(() -> condition())
     }
 
-    static void untilAsserted(long timeout, long poll, TimeUnit unit, ThrowingRunnable condition) {
+    static void untilAsserted(long timeout, long poll, TimeUnit unit, SoftAssertionsProvider.ThrowingRunnable condition) {
         Awaitility.await()
                 .atMost(timeout, unit)
                 .pollDelay(poll, unit)

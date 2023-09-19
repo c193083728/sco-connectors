@@ -1,0 +1,27 @@
+
+
+quarkus:
+  sco:
+    connector:
+      definitions:
+        - name: "${quarkus.sco.connector.type}-source-${quarkus.sco.connector.version}"
+          description: "Receive data from Azure Blob storage."
+          title: 'Azure Blob Storage source'
+          source:
+            name: 'connector-${quarkus.sco.connector.type}-source'
+          sink:
+            name: 'connector-kafka-sink'
+        - name: "${quarkus.sco.connector.type}-sink-${quarkus.sco.connector.version}"
+          description: "Send data to Azure Blob storage."
+          title: 'Azure Blob Storage sink'
+          source:
+            name: 'connector-kafka-source'
+          sink:
+            name: 'connector-${quarkus.sco.connector.type}-sink'
+        - name: "${quarkus.sco.connector.type}-changefeed-source-${quarkus.sco.connector.version}"
+          description: "Receive data from Azure Blob storage change feed."
+          title: 'Azure Blob Storage change feed source'
+          source:
+            name: 'connector-${quarkus.sco.connector.type}-changefeed-source'
+          sink:
+            name: 'connector-kafka-sink'

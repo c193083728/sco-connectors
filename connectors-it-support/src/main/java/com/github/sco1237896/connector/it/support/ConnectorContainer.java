@@ -272,45 +272,41 @@ public class ConnectorContainer extends GenericContainer<ConnectorContainer> {
 
         public ConnectorContainer build() {
             try (InputStream is = Files.newInputStream(definition)) {
-                ObjectMapper yaml = new ObjectMapper(new YAMLFactory().disable(YAMLGenerator.Feature.WRITE_DOC_START_MARKER));
-
-                ObjectMapper mapper = new YAMLMapper();
+                ObjectMapper mapper = new ObjectMapper(new YAMLFactory().disable(YAMLGenerator.Feature.WRITE_DOC_START_MARKER));
                 ObjectNode def = mapper.readValue(is, ObjectNode.class);
 
-                String image = def.requiredAt("/definition/metadata/annotations").get("trait.camel.apache.org/container.image")
+                String image = def.requiredAt("/spec/definition/metadata/annotations")
+                        .get("trait.camel.apache.org/container.image")
                         .asText();
                 DockerImageName imageName = DockerImageName.parse(image);
 
                 ConnectorContainer answer = new ConnectorContainer(imageName);
 
                 if (!kameletProperties.isEmpty()) {
-                    String sourceKamelet = def.requiredAt("/definition/spec/source/ref/name").asText();
-                    String sinkKamelet = def.requiredAt("/definition/spec/sink/ref/name").asText();
+                    String sourceKamelet = def.requiredAt("/spec/definition/spec/source/ref/name").asText();
+                    String sinkKamelet = def.requiredAt("/spec/definition/spec/sink/ref/name").asText();
 
-                    ArrayNode integration = yaml.createArrayNode();
-                    ObjectNode route = integration.addObject().with("route");
+                    ArrayNode integration = mapper.createArrayNode();
+                    ObjectNode route = integration.addObject().withObject("/route");
 
-                    ObjectNode from = route.with("from");
+                    ObjectNode from = route.withObject("/from");
                     from.put("uri", "kamelet:" + sourceKamelet);
 
                     if (kameletProperties.containsKey("source")) {
                         for (var entry : kameletProperties.get("source").entrySet()) {
-                            from.with("parameters").put(entry.getKey(), entry.getValue().toString());
+                            from.withObject("/parameters").put(entry.getKey(), entry.getValue().toString());
                         }
                     }
 
                     ArrayNode steps = from.withArray("steps");
-                    steps.addObject().with("to").put("uri", "log:steps-begin?showAll=true&multiline=true");
-                    steps.addObject().with("removeHeader").put("name", "X-Content-Schema");
-                    steps.addObject().with("removeProperty").put("name", "X-Content-Schema");
-                    steps.addObject().with("to").put("uri", "log:steps-end?showAll=true&multiline=true");
+                    steps.addObject().withObject("/to").put("uri", "log:steps?showAll=true&multiline=true");
 
-                    ObjectNode to = steps.addObject().with("to");
+                    ObjectNode to = steps.addObject().withObject("/to");
                     to.put("uri", "kamelet:" + sinkKamelet);
 
                     if (kameletProperties.containsKey("sink")) {
                         for (var entry : kameletProperties.get("sink").entrySet()) {
-                            to.with("parameters").put(entry.getKey(), entry.getValue().toString());
+                            to.withObject("/parameters").put(entry.getKey(), entry.getValue().toString());
                         }
                     }
 
@@ -319,9 +315,9 @@ public class ConnectorContainer extends GenericContainer<ConnectorContainer> {
                     //
                     // i.e. the exchange will contain headers and properties added by the
                     // target system component
-                    steps.addObject().with("to").put("uri", "log:after?showAll=true&multiline=true");
+                    steps.addObject().withObject("/to").put("uri", "log:after?showAll=true&multiline=true");
 
-                    String routeYaml = yaml.writerWithDefaultPrettyPrinter().writeValueAsString(integration);
+                    String routeYaml = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(integration);
 
                     TextStringBuilder sb = new TextStringBuilder();
                     sb.appendNewLine();

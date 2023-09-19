@@ -1,0 +1,27 @@
+
+
+quarkus:
+  sco:
+    connector:
+      definitions:
+        - name: "${quarkus.sco.connector.type}-source-${quarkus.sco.connector.version}"
+          description: "Receive notifications about new issues from Jira."
+          title: 'Jira source'
+          source:
+            name: 'connector-${quarkus.sco.connector.type}-source'
+          sink:
+            name: 'connector-kafka-sink'
+        - name: "${quarkus.sco.connector.type}-add-comment-sink-${quarkus.sco.connector.version}"
+          description: "Add a new comment to an existing issue in Jira."
+          title: 'Jira Add Comment sink'
+          source:
+            name: 'connector-kafka-source'
+          sink:
+            name: 'connector-${quarkus.sco.connector.type}-add-comment-sink'
+        - name: "${quarkus.sco.connector.type}-add-issue-sink-${quarkus.sco.connector.version}"
+          description: "Add a new issue to Jira."
+          title: 'Jira Add Issue sink'
+          source:
+            name: 'connector-kafka-source'
+          sink:
+            name: 'connector-${quarkus.sco.connector.type}-add-issue-sink'

@@ -1,26 +1,22 @@
 package com.github.sco1237896.connector.it.messaging.amqp
 
-
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.github.sco1237896.connector.it.support.KafkaContainer
-import groovy.util.logging.Slf4j
-import org.apache.qpid.jms.JmsConnectionFactory
 import com.github.sco1237896.connector.it.support.AwaitStrategy
 import com.github.sco1237896.connector.it.support.ContainerImages
 import com.github.sco1237896.connector.it.support.KafkaConnectorSpec
+import com.github.sco1237896.connector.it.support.KafkaContainer
+import groovy.util.logging.Slf4j
+import jakarta.jms.BytesMessage
+import jakarta.jms.Connection
+import jakarta.jms.JMSException
+import jakarta.jms.MessageConsumer
+import jakarta.jms.Queue
+import jakarta.jms.Session
+import org.apache.qpid.jms.JmsConnectionFactory
 import org.testcontainers.containers.ContainerState
 import org.testcontainers.containers.GenericContainer
 import org.testcontainers.containers.wait.strategy.WaitStrategy
-import spock.lang.Ignore
 
-import javax.jms.BytesMessage
-import javax.jms.Connection
-import javax.jms.JMSException
-import javax.jms.MessageConsumer
-import javax.jms.MessageProducer
-import javax.jms.Queue
-import javax.jms.Session
-import java.nio.charset.StandardCharsets
 import java.util.concurrent.TimeUnit
 
 @Slf4j
@@ -76,7 +72,7 @@ class JmsAmqpConnectorIT extends KafkaConnectorSpec {
                     'saslMechanism': KafkaContainer.SASL_MECHANISM,
                 ])
                 .withSinkProperties([
-                    "remoteURI": "amqp://${CONTAINER_NAME}:${CONTAINER_PORT}",
+                    "brokerURL": "amqp://${CONTAINER_NAME}:${CONTAINER_PORT}",
                     "destinationName": 'cards'
                 ])
                 .build()

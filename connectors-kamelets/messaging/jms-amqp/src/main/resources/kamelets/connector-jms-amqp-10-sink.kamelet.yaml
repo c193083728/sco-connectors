@@ -4,7 +4,7 @@ metadata:
   name: connector-jms-amqp-10-sink
   annotations:
     camel.apache.org/provider: "Red Hat"
-    camel.apache.org/kamelet.version: "${connector.kamelets.version}"
+    camel.apache.org/kamelet.version: "${quarkus.sco.kamelets.version}"
   labels:
     camel.apache.org/kamelet.type: "sink"
     camel.apache.org/requires.runtime: camel-k
@@ -14,7 +14,7 @@ spec:
     description: "Send data to any AMQP 1.0 compliant message broker by using the Apache Qpid JMS client."
     required:
       - destinationName
-      - remoteURI
+      - brokerURL
     type: object
     properties:
       destinationType:
@@ -26,7 +26,7 @@ spec:
         title: "Destination Name"
         description: "The JMS destination name."
         type: string
-      remoteURI:
+      brokerURL:
         title: "Broker URL"
         description: "The JMS URL."
         type: string
@@ -36,15 +36,14 @@ spec:
   - "camel:kamelet"
   template:
     beans:
-      - name: connectionFactoryBean
+      - name: "local-cf"
         type: "#class:org.apache.qpid.jms.JmsConnectionFactory"
-        property:
-          - key: remoteURI
-            value: '{{remoteURI}}'
+        properties:
+          remoteURI: '{{brokerURL}}'
     from:
       uri: "kamelet:source"
       steps:
       - to:
           uri: "jms:{{destinationType}}:{{destinationName}}"
           parameters:
-            connectionFactory: "#bean:{{connectionFactoryBean}}"
+            connectionFactory: "#bean:{{local-cf}}"

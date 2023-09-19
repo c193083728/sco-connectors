@@ -14,7 +14,7 @@
     <packaging>pom</packaging>
 
     <properties>
-        <connector.catalog.group>nosql</connector.catalog.group>
+        <quarkus.sco.catalog.group>nosql</quarkus.sco.catalog.group>
     </properties>
 
     <modules>

@@ -2,6 +2,7 @@ package com.github.sco1237896.connector.it.social.slack
 
 import com.github.sco1237896.connector.it.support.SimpleConnectorSpec
 import groovy.util.logging.Slf4j
+import io.restassured.http.ContentType
 
 @Slf4j
 class SlackConnectorContainerIT extends SimpleConnectorSpec {
@@ -12,7 +13,7 @@ class SlackConnectorContainerIT extends SimpleConnectorSpec {
             cnt.start()
         when:
             def health = cnt.request.get('/q/health')
-            def metrics = cnt.request.get("/q/metrics")
+            def metrics = cnt.request.accept(ContentType.TEXT).get("/q/metrics")
         then:
             health.statusCode == 200
             metrics.statusCode == 200
