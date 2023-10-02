@@ -46,7 +46,7 @@
         <everit-json-schema.version>1.14.2</everit-json-schema.version>
         <redshift-jdbc42.version>2.1.0.9</redshift-jdbc42.version>
         <awssdk-utils.version>2.17.223</awssdk-utils.version>
-        <artemis-jms.version>2.23.1</artemis-jms.version>
+        <artemis-jms.version>2.31.0</artemis-jms.version>
         <qpid-jms.version>2.4.0</qpid-jms.version>
         <mustache.version>0.9.10</mustache.version>
         <azure-storage-blob-changefeed.version>12.0.0-beta.17</azure-storage-blob-changefeed.version>
@@ -467,7 +467,7 @@
 
             <dependency>
                 <groupId>org.apache.activemq</groupId>
-                <artifactId>artemis-jms-client-all</artifactId>
+                <artifactId>artemis-jakarta-client</artifactId>
                 <version>${artemis-jms.version}</version>
             </dependency>
             <dependency>

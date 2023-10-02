@@ -20,7 +20,7 @@
     <dependencies>
         <dependency>
             <groupId>org.apache.activemq</groupId>
-            <artifactId>artemis-jms-client-all</artifactId>
+            <artifactId>artemis-jakarta-client</artifactId>
         </dependency>
     </dependencies>
 

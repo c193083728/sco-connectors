@@ -10,7 +10,7 @@
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>connector-jms-amqp-it</artifactId>
+    <artifactId>connector-jms-it</artifactId>
 
     <name>${project.artifactId}</name>
     <description>${project.artifactId}</description>
@@ -23,10 +23,27 @@
             <artifactId>qpid-jms-client</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>artemis-jakarta-client</artifactId>
+            <scope>test</scope>
+        </dependency>
 
         <dependency>
             <groupId>com.github.sco1237896</groupId>
             <artifactId>connector-jms-amqp</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.github.sco1237896</groupId>
+            <artifactId>connector-jms-artemis</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
             <exclusions>

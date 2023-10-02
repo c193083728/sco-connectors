@@ -16,7 +16,7 @@
     <properties>
         <container.image.redpanda>docker.io/redpandadata/redpanda:v23.2.8</container.image.redpanda>
         <container.image.wiremock>docker.io/wiremock/wiremock:2.35.0</container.image.wiremock>
-        <container.image.activemq-artemis>quay.io/artemiscloud/activemq-artemis-broker:1.0.22</container.image.activemq-artemis>
+        <container.image.activemq-artemis>docker.io/apache/activemq-artemis:2.31.0</container.image.activemq-artemis>
         <container.image.cassandra>cassandra:3.11</container.image.cassandra>
         <container.image.mongodb>mongo:5</container.image.mongodb>
         <container.image.mariadb>mariadb:10.6</container.image.mariadb>
