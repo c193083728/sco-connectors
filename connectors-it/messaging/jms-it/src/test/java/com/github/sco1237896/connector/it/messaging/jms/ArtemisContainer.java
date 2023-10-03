@@ -21,14 +21,14 @@ public class ArtemisContainer extends GenericContainer<ArtemisContainer> {
         super(imageName);
 
         Set<String> extraArgs = Set.of(
-            "--relax-jolokia",
-            "--mapped",
-            "--no-autotune",
-            "--no-fsync",
-            "--no-hornetq-acceptor",
-            "--no-mqtt-acceptor",
-            "--no-stomp-acceptor",
-            "--no-web");
+                "--relax-jolokia",
+                "--mapped",
+                "--no-autotune",
+                "--no-fsync",
+                "--no-hornetq-acceptor",
+                "--no-mqtt-acceptor",
+                "--no-stomp-acceptor",
+                "--no-web");
 
         withExposedPorts(CONTAINER_PORT);
         withEnv("ARTEMIS_USER", ARTEMIS_USERNAME);
