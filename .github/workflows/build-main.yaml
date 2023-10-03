@@ -51,7 +51,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           repository: sco1237896/sco-manifests
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.PR_TOKEN }}
           path: sco-manifests
 
       - name: Set up JDK 17
