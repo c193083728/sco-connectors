@@ -17,11 +17,6 @@
 
     <packaging>jar</packaging>
 
-    <properties>
-        <quarkus.container-image.name>connector-slack</quarkus.container-image.name>
-        <quarkus.container-image.tag>${connector.container.tag}</quarkus.container-image.tag>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>com.github.sco1237896</groupId>

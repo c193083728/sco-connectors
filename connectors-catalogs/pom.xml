@@ -21,7 +21,7 @@
 
         <quarkus.container-image.registry>${quarkus.sco.container.registry}</quarkus.container-image.registry>
         <quarkus.container-image.group>${quarkus.sco.container.organization}</quarkus.container-image.group>
-        <quarkus.container-image.tag>${git.branch}-${git.commit.id.abbrev}</quarkus.container-image.tag>
+        <quarkus.container-image.tag>${quarkus.sco.container.tag}</quarkus.container-image.tag>
 
         <quarkus.jib.base-jvm-image>${quarkus.sco.container.image-base}</quarkus.jib.base-jvm-image>
         <quarkus.jib.jvm-arguments>-XX:+UseShenandoahGC,-Djava.util.logging.manager=org.jboss.logmanager.LogManager</quarkus.jib.jvm-arguments>
@@ -208,7 +208,6 @@
         <module>storage</module>
     </modules>
 
-
     <profiles>
         <profile>
             <id>linux_amd64</id>
@@ -230,36 +229,6 @@
             </activation>
             <properties>
                 <quarkus.jib.platforms>linux/arm64</quarkus.jib.platforms>
-            </properties>
-        </profile>
-
-        <profile>
-            <id>container-build</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-            <properties>
-                <quarkus.container-image.build>true</quarkus.container-image.build>
-            </properties>
-        </profile>
-        <profile>
-            <id>container-push</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-            <properties>
-                <quarkus.container-image.push>true</quarkus.container-image.push>
-            </properties>
-        </profile>
-        <profile>
-            <id>fat-jar</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-            <properties>
-                <quarkus.container-image.build>false</quarkus.container-image.build>
-                <quarkus.package.type>uber-jar</quarkus.package.type>
-                <quarkus.package.output-name>connector</quarkus.package.output-name>
             </properties>
         </profile>
     </profiles>
