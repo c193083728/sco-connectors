@@ -17,8 +17,6 @@
 
         <quarkus.bootstrap.workspace-discovery>true</quarkus.bootstrap.workspace-discovery>
 
-        <quarkus.sco.catalog.name>connector-catalog-${quarkus.sco.catalog.group}</quarkus.sco.catalog.name>
-
         <quarkus.container-image.registry>${quarkus.sco.container.registry}</quarkus.container-image.registry>
         <quarkus.container-image.group>${quarkus.sco.container.organization}</quarkus.container-image.group>
         <quarkus.container-image.tag>${quarkus.sco.container.tag}</quarkus.container-image.tag>

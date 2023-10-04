@@ -67,6 +67,18 @@ public interface ConnectorConfiguration {
         String group();
 
         /**
+         * The /**.
+         */
+        @WithDefault("connector-catalog")
+        String prefix();
+
+        /**
+         * The /**.
+         */
+        @WithDefault("${quarkus.sco.catalog.prefix}-${quarkus.sco.catalog.group}")
+        String name();
+
+        /**
          * The initial revision.
          */
         @WithName("initial-revision")

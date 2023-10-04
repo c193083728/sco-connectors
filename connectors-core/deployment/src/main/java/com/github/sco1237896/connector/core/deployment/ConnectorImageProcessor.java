@@ -60,10 +60,10 @@ public class ConnectorImageProcessor {
         for (ConnectorImageDefinitionBuildItem item : images) {
 
             ConnectorImageDefinition image = item.image();
-            String id = item.image().getMetadata().getAnnotations().get(ConnectorSupport.API_GROUP + "/catalog.id");
+            String id = ConnectorSupport.getCatalogId(item.image().getMetadata());
 
             Path catalogRoot = Path.of(configuration.catalog().root());
-            Path catalogGroupRoot = catalogRoot.resolve("connector-catalog-" + configuration.catalog().group());
+            Path catalogGroupRoot = catalogRoot.resolve(configuration.catalog().name());
             Path catalogManifest = catalogGroupRoot.resolve(id + ".yaml");
 
             final AtomicBoolean buildImage = new AtomicBoolean(false);
