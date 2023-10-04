@@ -23,6 +23,7 @@ import java.util.stream.Stream;
 
 public class ConnectorResourcesProcessor {
     private static final Logger LOGGER = LoggerFactory.getLogger(ConnectorResourcesProcessor.class);
+    private static final String META_PATH = "META-INF/connectors";
 
     @BuildStep
     void kamelets(
@@ -65,7 +66,7 @@ public class ConnectorResourcesProcessor {
             throws Exception {
 
         Path catalogRoot = Path.of(configuration.catalog().root());
-        Path catalogGroupRoot = catalogRoot.resolve("connector-catalog-" + configuration.catalog().group());
+        Path catalogGroupRoot = catalogRoot.resolve(configuration.catalog().name());
 
         for (ConnectorBuildItem connector : connectors) {
 
@@ -73,7 +74,7 @@ public class ConnectorResourcesProcessor {
                 byte[] content = ConnectorSupport.WRITER.writeValueAsBytes(definition);
                 String id = ConnectorSupport.getConnectorId(definition.getSpec().getDefinition());
 
-                String localPath = "META-INF/connectors/" + id + ".yaml";
+                String localPath = META_PATH + "/" + id + ".yaml";
                 String catalogPath = catalogGroupRoot.resolve(id + ".yaml").toString();
 
                 LOGGER.info("connector definition (local) {}", localPath);
@@ -89,7 +90,7 @@ public class ConnectorResourcesProcessor {
                 byte[] content = ConnectorSupport.WRITER.writeValueAsBytes(connector.imageDefinition());
                 String id = ConnectorSupport.getCatalogId(connector.imageDefinition());
 
-                String localPath = "META-INF/connectors/" + id + ".yaml";
+                String localPath = META_PATH + "/" + id + ".yaml";
                 String catalogPath = catalogGroupRoot.resolve(id + ".yaml").toString();
 
                 LOGGER.info("connector image definition (local) {}", localPath);
