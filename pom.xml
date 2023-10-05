@@ -49,7 +49,7 @@
         <artemis-jms.version>2.31.0</artemis-jms.version>
         <qpid-jms.version>2.4.0</qpid-jms.version>
         <mustache.version>0.9.10</mustache.version>
-        <azure-storage-blob-changefeed.version>12.0.0-beta.17</azure-storage-blob-changefeed.version>
+        <azure-storage-blob-changefeed.version>12.0.0-beta.18</azure-storage-blob-changefeed.version>
         <testcontainers.version>1.19.0</testcontainers.version>
         <docker-java.version>3.3.3</docker-java.version>
         <freemarker.version>2.3.32</freemarker.version>
