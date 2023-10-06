@@ -49,8 +49,6 @@ spec:
     - 'camel:jackson'
     - "camel:jsonpath"
     - "camel:timer"
-    - "mvn:com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.13.4"
-    - "mvn:com.azure:azure-storage-blob-changefeed:12.0.0-beta.17"
   template:
     from:
       uri: "timer:azure-storage-blob-stream"
@@ -70,7 +68,6 @@ spec:
               - marshal:
                   json:
                     library: Jackson
-                    module-class-names: com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
                     unmarshalType: com.fasterxml.jackson.databind.JsonNode
               - set-header:
                   name: "azure-storage-blob-changefeed-topic"

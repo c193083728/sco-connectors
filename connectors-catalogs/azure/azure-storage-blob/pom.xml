@@ -50,14 +50,6 @@
             </activation>
             <dependencies>
                 <dependency>
-                    <groupId>com.azure</groupId>
-                    <artifactId>azure-storage-blob-changefeed</artifactId>
-                </dependency>
-                <dependency>
-                    <groupId>com.fasterxml.jackson.datatype</groupId>
-                    <artifactId>jackson-datatype-jsr310</artifactId>
-                </dependency>
-                <dependency>
                     <groupId>org.apache.camel.quarkus</groupId>
                     <artifactId>camel-quarkus-azure-storage-blob</artifactId>
                 </dependency>
